@@ -16,7 +16,8 @@
   "author": "Adam C Smith",
   "license": "ISC",
   "dependencies": {
-    "express": "4.14.0"
+    "express": "4.14.0",
+    "soap": "3.3.6"
   },
   "bugs": {
     "url": "https://github.com/irieadam/vatman/issues"
