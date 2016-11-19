@@ -24,3 +24,48 @@ Login - UploadReady - Status
 
 
 
+/////
+
+var requests = [{
+        requestId : '12456789',
+        itemId : '111222333',
+        countryCode : 'NL',
+        vatNumber : '819381548B01',
+        requesterCountryCode : 'NL',
+        requesterVatNumber : '855356650B01',
+        status : '',
+        confirmationNumber:  ''
+    },
+    {
+        requestId : '12456789',
+        itemId : '111222444',
+        countryCode : 'NL',
+        vatNumber : '819381548B99',
+        requesterCountryCode : 'NL',
+        requesterVatNumber : '855356650B01',
+        status : '',
+        confirmationNumber:  ''
+
+    }];
+
+
+
+{ 
+ "requestId" : "12456789",
+  "requests": [{
+        "itemId" : "111222333",
+        "countryCode" : "NL",
+        "vatNumber" : "819381548B01",
+        "requesterCountryCode" : "NL",
+        "requesterVatNumber" : "855356650B01"
+    },
+    {
+        "itemId" : "111222444",
+        "countryCode" : "NL",
+        "vatNumber" : "819381548B99",
+        "requesterCountryCode" : "NL",
+        "requesterVatNumber" : "855356650B01"
+
+    }]
+    }
+
