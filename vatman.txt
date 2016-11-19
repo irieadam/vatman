@@ -1,0 +1,26 @@
+Status 
+
+0 Ready 
+1 SubmittedByUser ( to vatman ) 
+2 SubmittedToVatService 202 ( submitted to vatman but no response received ) 
+3 VatServiceConfirmedOk 200 ( all ok http 200 and valid response, also pass Identifier  ) 
+4 Error ( 500, 503 ) 
+5 VatServiceConfirmedVatNumber 200 ( invalid ) 
+6 BadInputFromUser 
+7 VatserviceTimeOut 408
+
+Actors 
+
+Client  - Vat Man - Vat Service 
+
+- When changes notify browser. 
+
+
+Pages
+Login - UploadReady - Status 
+
+
+
+
+
+

@@ -1,0 +1,22 @@
+{
+  "name": "vatman",
+  "version": "1.0.0",
+  "description": "VAT validity checking",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/irieadam/vatman.git"
+  },
+  "keywords": [
+    "VAT"
+  ],
+  "author": "Adam C Smith",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/irieadam/vatman/issues"
+  },
+  "homepage": "https://github.com/irieadam/vatman#readme"
+}
