@@ -52,7 +52,7 @@ var requests = [{
 
 { 
  "requestId" : "12456789",
-  "requests": [{
+  "vatNumbers”: [{
         "itemId" : "111222333",
         "countryCode" : "NL",
         "vatNumber" : "819381548B01",
