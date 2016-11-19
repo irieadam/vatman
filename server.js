@@ -20,11 +20,7 @@ app.post('/process', function (req, res) {
     console.log(requests);
 
     var vatServiceWSDLUrl = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';
-    var args = {
-            countryCode : 'NL',
-            vatNumber : '819381548B01',
-            requesterCountryCode : 'NL',
-            requesterVatNumber : '855356650B01'};
+    var args = {};
 
       soap.createClient(vatServiceWSDLUrl, function(err, client) {
       client.checkVatApprox(args, function(err, result) {
