@@ -15,12 +15,12 @@ if (env === 'production') {
 }
 var db = {}; 
 
-db.requests = sequelize.import(__dirname + '/models/requests.js');
+db.request = sequelize.import(__dirname + '/models/request.js');
 db.user = sequelize.import(__dirname + '/models/user.js');
 db.token = sequelize.import(__dirname + '/models/token.js');
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-db.requests.belongsTo(db.user);
-db.user.hasMany(db.requests);
+db.request.belongsTo(db.user);
+db.user.hasMany(db.request);
 module.exports = db;

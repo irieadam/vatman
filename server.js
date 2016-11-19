@@ -29,36 +29,53 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
 
     // validations
     res.status(200).send();
+
     
     // process list
     vatNumbers.forEach(function (vatRequest) {
 
-        var checkVatApprox = {
-            countryCode : vatRequest.countryCode,
+        db.request.create({
+            id : requestid+vatRequest.itemId,
+            requestId : requestid,
+            itemId : vatRequest.itemId,
             vatNumber : vatRequest.vatNumber,
+            countryCode : vatRequest.countryCode,
+            requesterVatNumber : vatRequest.requesterVatNumber,
             requesterCountryCode : vatRequest.requesterCountryCode,
-            requesterVatNumber : vatRequest.requesterVatNumber
+            status : '1'
+        }).then(function (request) {
+
+            var checkVatApprox = {
+                countryCode : request.countryCode,
+                vatNumber : request.vatNumber,
+                requesterCountryCode : request.requesterCountryCode,
+                requesterVatNumber : request.requesterVatNumber
             };
         
-        soap.createClient(vatServiceWSDLUrl, function(err, client) {
-            client.checkVatApprox(checkVatApprox, function(err, result) {
-                if (result.valid) { 
-                    vatRequest.status = '2';
-                    } else if (!result.valid) {
-                        vatRequest.status = '5'
-                    } else {
-                        varRequest.status = '4'
-                    };
-                vatRequest.confirmationNumber = result.requestIdentifier;
-                results.push(vatRequest);
-                counter=counter+1;
-
-                if (counter === vatNumbers.length) {
-                    console.log(results);
-                   // res.status(200).send();
-                }  
+            soap.createClient(vatServiceWSDLUrl, function(err, client) {
+                client.checkVatApprox(checkVatApprox, function(err, result) {
+                    if (result.valid) { 
+                        request.update( {
+                                        status: '2',
+                                        confirmationNumber : result.requestIdentifier
+                                        });
+                        } else if (!result.valid) {
+                            request.update( {
+                                        status: '5',
+                                        confirmationNumber : result.requestIdentifier
+                                        });
+                        } else {
+                            request.update(  {
+                                        status: '4'
+                                        });
+                        };
             });          
         });
+            
+        } ).catch(function (e){
+            console.log(e);
+        });
+
     });      
 });
 
@@ -102,7 +119,7 @@ app.delete('/users/login', middleware.requireAuthentication, function (req,res) 
 })
 
 db.sequelize.sync({
-    force : false}).then(function () {
+    force : true }).then(function () {
             app.listen(PORT, function () {
                 console.log('Express listening on port + ' + PORT);
             });   
