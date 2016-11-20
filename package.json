@@ -21,6 +21,7 @@
     "crypto-js": "^3.1.6",
     "express": "4.14.0",
     "jsonwebtoken": "^6.2.0",
+    "path": "^0.12.7",
     "pg": "^4.4.1",
     "pg-hstore": "^2.3.2",
     "sequelize": "^3.22.0",

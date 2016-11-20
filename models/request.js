@@ -36,6 +36,20 @@ module.exports = function (sequelize, DataTypes) {
             len: [2]
         }
     },
+    traderName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+            len: [0,100]
+        }
+    },
+    traderAddress: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+            len: [0,250]
+        }
+    },
     requesterVatNumber: {
         type: DataTypes.STRING,
         allowNull: false,

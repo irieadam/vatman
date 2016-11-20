@@ -21,7 +21,9 @@ Login - UploadReady - Status
 
 
 
-
+        <th>countryCode</th>
+        <th>vatNumber</th>
+        <th>status</th>
 
 
 /////
