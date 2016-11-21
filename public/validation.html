@@ -24,17 +24,17 @@
           <div class="form-group col-lg-8 col-md-7 col-sm-7">
             <label for="requesterVat">Requester VAT</label>
             <input type="text" class="form-control" id="requesterVat" placeholder="124567896B01">
-
           </div>
           <div class="form-group col-lg-4 col-md-5 col-sm-5">
             <label for="requesterCountry" class="">Requester Country</label>
             <input type="text" class="form-control" id="requesterCountry" placeholder="NL">
           </div>
         </form>
+        <input btn btn-primary type="file" name="File Upload" id="txtFileUpload" accept=".csv" />
       </div>
     </div>
 
-    <div id="file-upload" class="row">
+  <!--  <div id="file-upload" class="row">
       <div class="col-md-12">
         <div class="fileupload fileupload-new" data-provides="fileupload">
           <span class="btn btn-primary btn-file"><span class="fileupload-new">Select file to upload</span>
@@ -47,7 +47,7 @@
 
       </div>
 
-    </div>
+    </div> -->
 
     <div class="row">
       <div id="status-table-bootstrap-cell" class="col-md-12">
@@ -60,11 +60,12 @@
               <th>Trader Name</th>
               <th>Trader Address</th>
               <th>Confirmation</th>
+              <th>RequestTime</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            <tr class="success">
+          <!--  <tr class="success">
               <td>NL</td>
               <td>819381548B01</td>
               <td>CREETION B.V</td>
@@ -95,7 +96,7 @@
               <td></td>
               <td></td>
               <td>2</td>
-            </tr>
+            </tr> -->
           </tbody>
         </table>
 
@@ -105,12 +106,14 @@
 
     <div id="bottom-buttons" class="row">
       <div class="col-md-12">
-        <button class="btn btn-primary">Check Numbers</button>
-        <button class="btn btn-primary float-md-right float-sm-right">Download</button>
+        <button  id="validateNumbers" class="btn btn-primary">Validate</button>
+        <button id="export" class="btn btn-primary float-md-right float-sm-right">Export</button>
       </div>
     </div>
 
   </div>
+
+<script src="../script.js"></script>
 
 </body>
 

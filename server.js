@@ -32,7 +32,6 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
     var requesterCountry = req.body.requesterCountryCode;
     var vatNumbers = req.body.vatNumbers;
     var checkVatApprox = {};
-    var counter = 0;
 
     // validations
     res.status(200).send();
@@ -49,7 +48,7 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
             countryCode : vatRequest.countryCode,
             requesterVatNumber : requesterNumber,
             requesterCountryCode :  requesterCountry,
-            status : '1'
+            status : '0'
         }).then(function (request) {
 
             var checkVatApprox = {
@@ -58,15 +57,19 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
                 requesterCountryCode : request.requesterCountryCode,
                 requesterVatNumber : request.requesterVatNumber
             };
+
+            request.status = '1';
         
             soap.createClient(vatServiceWSDLUrl, function(err, client) {
+         
                 client.checkVatApprox(checkVatApprox, function(err, result) {
                     if (result.valid) { 
                         request.update( {
                                         status: '2',
                                         traderName : result.traderName,
                                         traderAddress: result.traderAddress,
-                                        confirmationNumber : result.requestIdentifier
+                                        confirmationNumber : result.requestIdentifier,
+                                        requestDate : result.requestDate
                                         });
                         } else if (!result.valid) {
                             request.update( {
@@ -100,7 +103,6 @@ app.post('/users', function(req, res){
 });
 
 app.post('/users/login', function(req, res){
-       console.log(req);
     var body = _.pick(req.body,'email', 'password') ;
     var userInstance;
     
@@ -115,7 +117,7 @@ app.post('/users/login', function(req, res){
  
        // res.sendFile(__dirname + '/public/validation.html');
        // res.header('Auth',tokenInstance.token).json(userInstance.toPublicJSON());   
-      res.header('Auth',tokenInstance.token).status(200).sendFile(__dirname + '/public/validation.html');       
+      res.status(200).cookie('Auth',tokenInstance.token).sendFile(__dirname + '/public/validation.html');       
 
     } ).catch(function(e){
         res.status(401).send();     

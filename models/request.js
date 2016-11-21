@@ -5,21 +5,21 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
         primaryKey: true,
         validate: {
-            len: [1, 250]
+            len: [1, 72]
         }
     },
    requestId: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-            len: [1, 125]
+            len: [1, 36]
         }
     },
     itemId: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-            len: [1, 125]
+            len: [1, 36]
         }
     },
     vatNumber: {
@@ -71,6 +71,10 @@ module.exports = function (sequelize, DataTypes) {
         validate: {
             len: [1,2]
         }
+    },
+    requestDate: {
+        type: DataTypes.DATE,
+        allowNull: true
     },
     confirmationNumber: {
         type: DataTypes.STRING,
