@@ -10,7 +10,7 @@ var path = require('path');
 var app = express();
 var PORT = process.env.PORT || 3000
 var requests = [];
-var results = [];
+var arrayOfDbResults = [];
 
 // middleware
 app.use(bodyParser.json());
@@ -25,6 +25,33 @@ app.get('/', function (req, res) {
    res.sendFile(__dirname + '/public/login.html');
 });
 
+app.get('/export', function (req, res) {
+    var arrayOfItemIds = [];
+
+    db.request.findAll({
+        attributes: { exclude: ['id','requestId','itemId','createdAt','updatedAt','userId']},
+        where: {id: arrayOfItemIds }
+    })
+     .then(function(requests) {
+         var jsonObject;
+         var file;
+         requests.forEach(function (request) {
+             arrayOfDbResults.push(request);
+            }
+         );
+         jsonObject = JSON.stringify(arrayOfDbResults);
+         file = ConvertToCSV(jsonObject);
+         console.log(file);
+        //res.status(418);
+        res.status(200).set({
+            'Content-Type': 'text/plain',
+            'Content-Disposition': contentDisposition('export.csv')
+        }).send(file);
+
+     })
+
+});
+
 app.post('/process', middleware.requireAuthentication, function(req, res) {
     var vatServiceWSDLUrl = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';    
     var requestid = req.body.requestId;
@@ -35,7 +62,6 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
 
     // validations
     res.status(200).send();
-
     
     // process list
     vatNumbers.forEach(function (vatRequest) {
@@ -69,7 +95,7 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
                                         traderName : result.traderName,
                                         traderAddress: result.traderAddress,
                                         confirmationNumber : result.requestIdentifier,
-                                        requestDate : result.requestDate
+                                        requestDate : result.requestDate.toString()
                                         });
                         } else if (!result.valid) {
                             request.update( {
@@ -117,7 +143,9 @@ app.post('/users/login', function(req, res){
  
        // res.sendFile(__dirname + '/public/validation.html');
        // res.header('Auth',tokenInstance.token).json(userInstance.toPublicJSON());   
-      res.status(200).cookie('Auth',tokenInstance.token).sendFile(__dirname + '/public/validation.html');       
+      res.cookie('Auth',tokenInstance.token);
+      res.cookie('sessionId', guid());
+      res.status(200).sendFile(__dirname + '/public/validation.html');       
 
     } ).catch(function(e){
         res.status(401).send();     
@@ -139,14 +167,58 @@ db.sequelize.sync({
             app.listen(PORT, function () {
                 
                 //create admin
-                var body = { email : 'admin@vatvision.com',
+              var body = { email : 'admin@vatvision.com',
                              password : 'happyday1'} ;
 
                 db.user.create(body).then(function (user) {
                     console.log('Express listening on port + ' + PORT);
                 } ).catch(function (e){
                     console.log('Admin user creation failed ' + e);
-                })
+                })  
                 
-            });   
+            });    
+             
 });
+
+// JSON to CSV Converter
+function ConvertToCSV(objArray) {
+    var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+    var str = '';
+
+    for (var i = 0; i < array.length; i++) {
+        var line = '';
+        for (var index in array[i]) {
+            if (line != '') line += ','
+
+            line += array[i][index];
+        }
+
+        str += line + '\r\n';
+    }
+
+    return str;
+};
+
+// extracted from Express, used by `res.download()`
+function contentDisposition(filename) {
+  var ret = 'attachment';
+  if (filename) {
+   // filename = basename(filename);
+    // if filename contains non-ascii characters, add a utf-8 version ala RFC 5987
+    ret = /[^\040-\176]/.test(filename)
+      ? 'attachment; filename="' + encodeURI(filename) + '"; filename*=UTF-8\'\'' + encodeURI(filename)
+      : 'attachment; filename="' + filename + '"';
+  }
+
+  return ret;
+}
+
+function guid() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    s4() + '-' + s4() + s4() + s4();
+}

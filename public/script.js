@@ -5,7 +5,6 @@ var fileSelected = false;
 // The event listener for the file upload
 document.getElementById('txtFileUpload').addEventListener('change', upload, false);
 document.getElementById('validateNumbers').addEventListener('click', process, false);
-document.getElementById('export').addEventListener('click', download, false);
 
 function process(evt) {
     var requesterCountryCode = document.getElementById("requesterCountry").value;
@@ -33,9 +32,6 @@ function process(evt) {
         }
 }
 
-function download(evt) {
-
-}
 // Method that checks that the browser supports the HTML5 File API
 function browserSupportFileUpload() {
   var isCompatible = false;
@@ -60,11 +56,15 @@ function upload(evt) {
       var arrayOfObjects = csvTextArray.map(function(e,i) {
         var countryCode = e.split(',')[0];
         var vatNumber = e.split(',')[1];
-        
         return {
           itemId : guid(),
           countryCode: countryCode,
-          vatNumber: vatNumber
+          vatNumber: vatNumber,
+          traderName: '',
+          traderAddress: '',
+          confirmation: '',
+          requestTime: '',
+          status : '1'
         };
         
       });
@@ -83,43 +83,41 @@ function upload(evt) {
 }
 // why do i need to make these methods myself?? 
 function fillTable() {
-    var len = jsonObjWithArrayOfVatCodes.item.length;
     var table = document.getElementById('status-table');
 
-    for (var i=0; i < len; i++) {
+    jsonObjWithArrayOfVatCodes.item.forEach(function (vatCode) {
         var tr = document.createElement('tr');
-        var s = jsonObjWithArrayOfVatCodes.item[i];
 
         var td = document.createElement('td');
-        td.innerHTML = s.countryCode;
+        td.innerHTML = vatCode.countryCode;
         tr.appendChild(td);
 
         td = document.createElement('td');
-        td.innerHTML = s.vatNumber;
+        td.innerHTML = vatCode.vatNumber;
         tr.appendChild(td);
 
         td = document.createElement('td');
-        td.innerHTML = s.traderName;
+        td.innerHTML = vatCode.traderName;
         tr.appendChild(td);
 
         td = document.createElement('td');
-        td.innerHTML = s.traderAddress;
+        td.innerHTML = vatCode.traderAddress;
+        tr.appendChild(td);
+
+        td = document.createElement('td');
+        td.innerHTML = vatCode.confirmation;
         tr.appendChild(td);
 
          td = document.createElement('td');
-        td.innerHTML = s.requestDate;
+        td.innerHTML = vatCode.requestTime;
         tr.appendChild(td);
 
         td = document.createElement('td');
-        td.innerHTML = s.confirmation;
-        tr.appendChild(td);
-
-         td = document.createElement('td');
-        td.innerHTML = 'Ready';
+        td.innerHTML = vatCode.status;
         tr.appendChild(td);
 
         table.appendChild(tr);
-        };
+        });
 }
 
 function guid() {

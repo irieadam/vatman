@@ -73,7 +73,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     },
     requestDate: {
-        type: DataTypes.DATE,
+        type: DataTypes.STRING,
         allowNull: true
     },
     confirmationNumber: {

@@ -12,11 +12,6 @@ nav {
   margin-bottom: 15px;
 }
 
-.card {
-  padding-top: 15px;
-  padding-bottom: 15px;
-}
-
 #requestor-input-boxes {
   display: flex;
   flex-direction: column;
@@ -27,10 +22,12 @@ nav {
   width: 100px;
 }
 
-#requestor-input-boxes form div:last-child {
-  margin-bottom: 0;
-}
-
 #status-table-bootstrap-cell {
   overflow-x: auto;
+}
+
+.form-group {
+  padding-left: 0;
+  padding-right: 15px;
+ 
 }
