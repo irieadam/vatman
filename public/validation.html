@@ -66,38 +66,6 @@
             </tr>
           </thead>
           <tbody>
-            <!--  <tr class="success">
-              <td>NL</td>
-              <td>819381548B01</td>
-              <td>CREETION B.V</td>
-              <td>BREDASEWEG 00108 4902NS OOSTERHOUT NB</td>
-              <td>WAPIAAAAVh-A6Hfe</td>
-              <td>2</td>
-            </tr>
-            <tr class="danger">
-              <td>NL</td>
-              <td>819381548B99</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td>5</td>
-            </tr>
-            <tr class="warning">
-              <td>NL</td>
-              <td>542681548B99</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td>4</td>
-            </tr>
-            <tr class="active">
-              <td>NL</td>
-              <td>542681548B99</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td>2</td>
-            </tr> -->
           </tbody>
           <tfoot>
             <td colspan="7"></td>
@@ -112,16 +80,15 @@
     <div id="bottom-buttons" class="row">
       <div class="col-md-12">
         <button id="validateNumbers" class="btn btn-primary">Validate</button>
-        <form action="/export" method="get">
-          <input type="submit" class="btn btn-primary float-md-right float-sm-right" value="Export"></input>
-        </form>
-        <!-- <button id="download" class="btn btn-primary float-md-right float-sm-right">Export</button> -->
-        <!-- <a href="data:text/csv;charset=utf-8,'+escape(csv)+'" download="filename.csv">download</a> -->
+    <!--    <button id="exportResult" class="btn btn-primary float-md-right float-sm-right">Export</button>
+          -->
+
+            <form action="/export" method="get">
+              <input type="submit" class="btn btn-primary" value="Export"></input>
+           </form>  
+          
       </div>
     </div>
-
-
-
   </div>
 
   <script src="../script.js"></script>

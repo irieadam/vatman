@@ -1,8 +1,4 @@
 Status 
-       <form action="/export" method="get"> 
-          <button id="validateNumbers" class="btn btn-primary">Validate</button>
-          <input type="submit" class="btn btn-primary float-md-right float-sm-right" value="Export"></input>
-        </form>
 
 var fields = ['vatNumber','countryCode','traderName','traderAddress','requesterVatNumber','requesterCountryCode','status','requestDate','confirmationNumber'];
 

@@ -5,6 +5,7 @@ var fileSelected = false;
 // The event listener for the file upload
 document.getElementById('txtFileUpload').addEventListener('change', upload, false);
 document.getElementById('validateNumbers').addEventListener('click', process, false);
+//document.getElementById('exportResult').addEventListener('click', getFile, false);
 
 function process(evt) {
     var requesterCountryCode = document.getElementById("requesterCountry").value;
@@ -22,6 +23,7 @@ function process(evt) {
             client.open('POST', '/process', true);
             client.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
             client.setRequestHeader('Auth', getCookie('Auth'));
+            client.setRequestHeader('sessionId', getCookie('sessionId'));
 
             client.onreadystatechange = function () { 
                 if (client.readyState == 4 && client.status == 401) {
@@ -31,6 +33,27 @@ function process(evt) {
             client.send(JSON.stringify(batch));
         }
 }
+
+function getFile(evt) { //NOT called anywhere
+            var client = new XMLHttpRequest();
+            client.open('GET', '/export', true);
+           // client.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+            client.setRequestHeader('Auth', getCookie('Auth'));
+            client.setRequestHeader('sessionId', getCookie('sessionId'));
+
+            client.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
+            client.setRequestHeader('Accept-Encoding', 'gzip, deflate, sdch, br');
+            client.setRequestHeader('Accept-Language', 'en-US,en;q=0.8,nl;q=0.6');
+            client.setRequestHeader('Upgrade-Insecure-Requests', 1);
+
+            client.onreadystatechange = function () { 
+                if (client.readyState == 4 && client.status == 401) {
+                    alert('Unauthorized!!!');
+                }
+            }
+            client.send();
+} 
+
 
 // Method that checks that the browser supports the HTML5 File API
 function browserSupportFileUpload() {

@@ -6,6 +6,7 @@ var bcrypt = require('bcrypt');
 var _ = require('underscore');
 var middleware = require('./middleware.js')(db);
 var path = require('path');
+var cookieParser = require('cookie-parser')
 
 var app = express();
 var PORT = process.env.PORT || 3000
@@ -13,6 +14,7 @@ var requests = [];
 var arrayOfDbResults = [];
 
 // middleware
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
@@ -26,11 +28,12 @@ app.get('/', function (req, res) {
 });
 
 app.get('/export', function (req, res) {
-    var arrayOfItemIds = [];
-
+    //var sessionId = req.get('sessionId');
+    var sessionId = get_cookies(req).sessionId;
+    
     db.request.findAll({
-        attributes: { exclude: ['id','requestId','itemId','createdAt','updatedAt','userId']},
-        where: {id: arrayOfItemIds }
+        attributes: { exclude: ['id','sessionId','requestId','itemId','createdAt','updatedAt','userId']},
+        where: {sessionId: sessionId }
     })
      .then(function(requests) {
          var jsonObject;
@@ -41,79 +44,62 @@ app.get('/export', function (req, res) {
          );
          jsonObject = JSON.stringify(arrayOfDbResults);
          file = ConvertToCSV(jsonObject);
-         console.log(file);
-        //res.status(418);
-        res.status(200).set({
-            'Content-Type': 'text/plain',
-            'Content-Disposition': contentDisposition('export.csv')
+         
+         res.status(200).set({
+            'Content-Type': 'text/csv',//'text/plain',
+            'Content-Disposition': contentDisposition(sessionId+'.csv')
         }).send(file);
 
      })
 
 });
 
-app.post('/process', middleware.requireAuthentication, function(req, res) {
-    var vatServiceWSDLUrl = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';    
+app.post('/process', middleware.requireAuthentication, function(req, res) {  
     var requestid = req.body.requestId;
     var requesterNumber = req.body.requesterVatNumber;
     var requesterCountry = req.body.requesterCountryCode;
     var vatNumbers = req.body.vatNumbers;
-    var checkVatApprox = {};
-
+    var sessionId = req.get('sessionId');
+     
     // validations
     res.status(200).send();
     
     // process list
     vatNumbers.forEach(function (vatRequest) {
 
-        db.request.create({
-            id : requestid+vatRequest.itemId,
-            requestId : requestid,
-            itemId : vatRequest.itemId,
-            vatNumber : vatRequest.vatNumber,
-            countryCode : vatRequest.countryCode,
-            requesterVatNumber : requesterNumber,
-            requesterCountryCode :  requesterCountry,
-            status : '0'
-        }).then(function (request) {
-
-            var checkVatApprox = {
-                countryCode : request.countryCode,
-                vatNumber : request.vatNumber,
-                requesterCountryCode : request.requesterCountryCode,
-                requesterVatNumber : request.requesterVatNumber
-            };
-
-            request.status = '1';
-        
-            soap.createClient(vatServiceWSDLUrl, function(err, client) {
-         
-                client.checkVatApprox(checkVatApprox, function(err, result) {
-                    if (result.valid) { 
-                        request.update( {
-                                        status: '2',
-                                        traderName : result.traderName,
-                                        traderAddress: result.traderAddress,
-                                        confirmationNumber : result.requestIdentifier,
-                                        requestDate : result.requestDate.toString()
-                                        });
-                        } else if (!result.valid) {
-                            request.update( {
-                                        status: '5',
-                                        confirmationNumber : result.requestIdentifier
-                                        });
-                        } else {
-                            request.update(  {
-                                        status: '4'
-                                        });
-                        };
-            });          
-        });
+        //check for existing item. 
+        db.request.findOne( {where: {
+            itemId: vatRequest.itemId
+        }}).then(function (request) {
             
-        } ).catch(function (e){
-            console.log(e);
-        });
+            if (request===null) {
+                db.request.create({
+                            id : sessionId+requestid+vatRequest.itemId,
+                            sessionId : sessionId,
+                            requestId : requestid,
+                            itemId : vatRequest.itemId,
+                            vatNumber : vatRequest.vatNumber,
+                            countryCode : vatRequest.countryCode,
+                            requesterVatNumber : requesterNumber,
+                            requesterCountryCode :  requesterCountry,
+                            status : '0',
+                            retries : 0
+                        }).then(function (request) {
 
+                            callVatService(request);
+                            
+                        } ).catch(function (e){
+                            console.log(e);
+                        });        
+            } else {
+                if (request.status==='3' || request.status==='5' ) {
+                    request.update( {retries : request.retries+1});
+                } else {
+                    callVatService(request);    
+                    request.update( {retries : request.retries+1});
+                }
+            }
+        });
     });      
 });
 
@@ -180,6 +166,42 @@ db.sequelize.sync({
              
 });
 
+function callVatService (request) {
+        var vatServiceWSDLUrl = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';  
+        var checkVatApprox = {
+            countryCode : request.countryCode,
+            vatNumber : request.vatNumber,
+            requesterCountryCode : request.requesterCountryCode,
+            requesterVatNumber : request.requesterVatNumber
+        };
+
+        request.status = '1';
+    
+        soap.createClient(vatServiceWSDLUrl, function(err, client) {
+    
+            client.checkVatApprox(checkVatApprox, function(err, result) {
+                if (result.valid) { 
+                    request.update( {
+                                    status: '3',
+                                    traderName : result.traderName,
+                                    traderAddress: result.traderAddress,
+                                    confirmationNumber : result.requestIdentifier,
+                                    requestDate : result.requestDate.toString()
+                                    });
+                    } else if (!result.valid) {
+                        request.update( {
+                                    status: '5',
+                                    confirmationNumber : result.requestIdentifier
+                                    });
+                    } else {
+                        request.update(  {
+                                    status: '4'
+                                    });
+                    };
+        });          
+    });
+}
+
 // JSON to CSV Converter
 function ConvertToCSV(objArray) {
     var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
@@ -209,7 +231,7 @@ function contentDisposition(filename) {
       ? 'attachment; filename="' + encodeURI(filename) + '"; filename*=UTF-8\'\'' + encodeURI(filename)
       : 'attachment; filename="' + filename + '"';
   }
-
+  console.log('>>>>>>>>>>>>>>>>>>' + ret);
   return ret;
 }
 
@@ -222,3 +244,12 @@ function guid() {
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
     s4() + '-' + s4() + s4() + s4();
 }
+
+var get_cookies = function(request) {
+  var cookies = {};
+  request.headers && request.headers.cookie.split(';').forEach(function(cookie) {
+    var parts = cookie.match(/(.*?)=(.*)$/)
+    cookies[ parts[1].trim() ] = (parts[2] || '').trim();
+  });
+  return cookies;
+};

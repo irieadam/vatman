@@ -5,7 +5,14 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
         primaryKey: true,
         validate: {
-            len: [1, 72]
+            len: [1, 130]
+        }
+    },
+    sessionId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            len: [1, 36]
         }
     },
    requestId: {
@@ -78,6 +85,10 @@ module.exports = function (sequelize, DataTypes) {
     },
     confirmationNumber: {
         type: DataTypes.STRING,
+        allowNull: true
+    },
+    retries: {
+        type: DataTypes.INTEGER,
         allowNull: true
     }
 }, {
