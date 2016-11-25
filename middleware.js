@@ -4,7 +4,8 @@ module.exports = function (db) {
 
     return {
         requireAuthentication: function (req, res, next) {
-            var token = req.get('Auth') || '';
+           // var token = req.get('Auth') || '';
+               var token = get_cookies(req).Auth || '';
 
             db.token.findOne({
                 where: {
@@ -35,3 +36,11 @@ module.exports = function (db) {
         }
     };
 }
+var get_cookies = function(request) {
+  var cookies = {};
+  request.headers && request.headers.cookie.split(';').forEach(function(cookie) {
+    var parts = cookie.match(/(.*?)=(.*)$/)
+    cookies[ parts[1].trim() ] = (parts[2] || '').trim();
+  });
+  return cookies;
+};

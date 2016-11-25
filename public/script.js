@@ -11,7 +11,7 @@ function process(evt) {
     var requesterCountryCode = document.getElementById("requesterCountry").value;
     var requesterVatNumber = document.getElementById("requesterVat").value;
         if (!fileSelected || requesterCountryCode.length===0 || requesterVatNumber.length===0) {
-            alert('Correct your input');
+            alert('Please correct your input');
         } else {
            batch = {
                 "requestId" : guid(),
@@ -27,7 +27,9 @@ function process(evt) {
 
             client.onreadystatechange = function () { 
                 if (client.readyState == 4 && client.status == 401) {
-                    alert('Unauthorized!!!');
+                    alert('Unauthorized');
+                } else if (client.readyState == 4 && client.status == 200) {
+                    alert('Submitted');
                 }
             }
             client.send(JSON.stringify(batch));
@@ -48,7 +50,7 @@ function getFile(evt) { //NOT called anywhere
 
             client.onreadystatechange = function () { 
                 if (client.readyState == 4 && client.status == 401) {
-                    alert('Unauthorized!!!');
+                    alert('Unauthorized');
                 }
             }
             client.send();

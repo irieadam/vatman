@@ -59,8 +59,8 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
     var requesterNumber = req.body.requesterVatNumber;
     var requesterCountry = req.body.requesterCountryCode;
     var vatNumbers = req.body.vatNumbers;
-    var sessionId = req.get('sessionId');
-     
+    //var sessionId = req.get('sessionId');
+    var sessionId = get_cookies(req).sessionId;
     // validations
     res.status(200).send();
     
