@@ -1,11 +1,15 @@
-var jsonObjWithArrayOfVatCodes;
+var jsonObjWithArrayOfVatCodes = {item : [] } ;
 var batch;
 var fileSelected = false;
+
+var vm = { vatRequests : ko.observableArray([])};
+ko.applyBindings(vm);
 
 // The event listener for the file upload
 document.getElementById('txtFileUpload').addEventListener('change', upload, false);
 document.getElementById('validateNumbers').addEventListener('click', process, false);
 //document.getElementById('exportResult').addEventListener('click', getFile, false);
+
 
 function process(evt) {
     var requesterCountryCode = document.getElementById("requesterCountry").value;
@@ -17,7 +21,7 @@ function process(evt) {
                 "requestId" : guid(),
                 "requesterCountryCode" : requesterCountryCode,
                 "requesterVatNumber" : requesterVatNumber,
-                "vatNumbers" : jsonObjWithArrayOfVatCodes.item
+                "vatNumbers" : []
             }
             var client = new XMLHttpRequest();
             client.open('POST', '/process', true);
@@ -32,7 +36,14 @@ function process(evt) {
                     alert('Submitted');
                 }
             }
-            client.send(JSON.stringify(batch));
+            ;
+         
+        
+        vm.vatRequests().forEach(function (request) {
+            batch.vatNumbers.push(ko.unwrap(request));
+        })
+    
+          client.send(JSON.stringify(batch));
         }
 }
 
@@ -93,11 +104,13 @@ function upload(evt) {
         };
         
       });
-      
-      var nonEmptyValues = arrayOfObjects.filter(function(i) { return i.countryCode.length > 0; });
-      
-      jsonObjWithArrayOfVatCodes = { item: nonEmptyValues };
-      fillTable();
+     
+
+      var nonEmptyValues = arrayOfObjects.filter((i)=> i.countryCode.length > 0);
+      var observableVatRequests = nonEmptyValues.map(ko.observable);
+      vm.vatRequests(observableVatRequests);
+
+      //fillTable();
       fileSelected = true;
       
     };
@@ -107,10 +120,12 @@ function upload(evt) {
   }
 }
 // why do i need to make these methods myself?? 
-function fillTable() {
-    var table = document.getElementById('status-table');
+//function fillTable() {
+  //  var table = document.getElementById('status-table');
 
-    jsonObjWithArrayOfVatCodes.item.forEach(function (vatCode) {
+
+    
+ /**  jsonObjWithArrayOfVatCodes.item.forEach(function (vatCode) {
         var tr = document.createElement('tr');
 
         var td = document.createElement('td');
@@ -142,8 +157,8 @@ function fillTable() {
         tr.appendChild(td);
 
         table.appendChild(tr);
-        });
-}
+        });  */
+//}
 
 function guid() {
   function s4() {
@@ -190,3 +205,17 @@ function getCookie(cname) {
         } 
 }
  */
+
+/************* 
+function Request(itemId,countryCode,vatNumber ,traderName,traderAddress, confirmation, requestTime ,status) {
+    var self = this;
+    self.itemId = itemId;
+    self.countryCode = ko.observable(countryCode);
+    self.vatNumber = ko.observable(vatNumber);
+    self.traderName = ko.observable(traderName);
+    self.traderAddress = ko.observable(traderAddress);
+    self.confirmation = confirmation;
+    self.requestTime = requestTime;
+    self.status = status;
+} */
+

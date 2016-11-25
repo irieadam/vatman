@@ -65,7 +65,17 @@
               <th>Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody data-bind="foreach: vatRequests">
+             <tr>
+            <td data-bind="text: countryCode"></td>
+            <td data-bind="text: vatNumber"></td>
+            <td data-bind="text: traderName"></td>
+            <td data-bind="text: traderAddress"></td>
+            <td data-bind="text: confirmation"></td>
+            <td data-bind="text: requestTime"></td>
+            <td data-bind="text: status"></td>
+             </tr>
+
           </tbody>
           <tfoot>
             <td colspan="7"></td>
@@ -94,9 +104,9 @@
       </div>
     </div>
   </div>
-
+<script src="http://knockoutjs.com/downloads/knockout-3.0.0.debug.js" type="text/javascript"></script>
   <script src="../script.js"></script>
-
+   
 </body>
 
 </html>
