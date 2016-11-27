@@ -17,3 +17,23 @@ background-color:#dff0d8
 .active {
  background-color:#f5f5f5
 }
+
+#status-table-div table tbody, table thead {
+      display: block;
+    }
+#status-table-div table tbody {
+      overflow: auto;
+      height: 20em;
+    }
+    
+#status-table-div td {
+      width: 272px;
+    }
+    
+#status-table-div th {
+      width: 272px;
+    }
+
+
+
+

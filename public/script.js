@@ -15,7 +15,6 @@ document.getElementById('logout').addEventListener('click', logout, false);
 //document.getElementById('exportResult').addEventListener('click', getFile, false);
 
 socket.on('message', function (message) {
-     console.log(message);
      var item = ko.utils.arrayFirst(vm.vatRequests(), function (item) {
         return item().itemId() === message.itemId;
       }) || null;
@@ -49,7 +48,7 @@ function process(evt) {
                 if (client.readyState == 4 && client.status == 401) {
                     alert('Unauthorized');
                 } else if (client.readyState == 4 && client.status == 200) {
-                    alert('Submitted');
+                   // alert('Submitted');
                 }
             }
             ;

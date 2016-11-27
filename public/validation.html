@@ -56,11 +56,11 @@
     <div class="row">
     </div>
 
-    <div class="row">
-      <div id="status-table-bootstrap-cell" class="col-md-12">
+    <div class="row" >
 
+      <div id="status-table-div" class="col-md-12" >
         <table id="status-table" class="table table-bordered">
-          <thead>
+       <thead>
             <tr>
               <th>Country Code</th>
               <th>Vat Number</th>
@@ -69,9 +69,9 @@
               <th>Confirmation</th>
               <th>RequestTime</th>
             </tr>
-          </thead>
+          </thead> 
           <tbody data-bind="foreach: vatRequests">
-             <tr>
+             <tr data-bind="css: { success: status() == 3,danger: status() == 5, warning: status() == 4 ,active: status() == 1}">
             <td data-bind="text: countryCode"></td>
             <td data-bind="text: vatNumber"></td>
             <td data-bind="text: traderName"></td>

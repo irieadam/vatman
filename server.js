@@ -160,7 +160,8 @@ app.post('/users/login', function(req, res){
 
 app.delete('/users/login', middleware.requireAuthentication, function (req,res) {
     req.token.destroy().then(function() {
-        res.status(200).sendFile(__dirname + '/public/logout.html');
+       // res.status(200).sendFile(__dirname + '/public/logout.html');
+        res.redirect('/');
     }).catch(function () {
         res.status(500).send();
     });
