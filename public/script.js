@@ -5,11 +5,28 @@ var fileSelected = false;
 var vm = { vatRequests : ko.observableArray([])};
 ko.applyBindings(vm);
 
+var socket = io();
+
+
 // The event listener for the file upload
 document.getElementById('txtFileUpload').addEventListener('change', upload, false);
 document.getElementById('validateNumbers').addEventListener('click', process, false);
+document.getElementById('logout').addEventListener('click', logout, false);
 //document.getElementById('exportResult').addEventListener('click', getFile, false);
 
+socket.on('message', function (message) {
+     console.log(message);
+     var item = ko.utils.arrayFirst(vm.vatRequests(), function (item) {
+        return item().itemId() === message.itemId;
+      }) || null;
+      if (item!=null) {
+          item().traderName(message.traderName);
+          item().traderAddress(message.traderAddress);
+          item().confirmation(message.confirmationNumber);
+          item().requestTime(message.updatedAt);
+          item().status(message.status);
+      }
+})
 
 function process(evt) {
     var requesterCountryCode = document.getElementById("requesterCountry").value;
@@ -28,7 +45,6 @@ function process(evt) {
             client.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
             client.setRequestHeader('Auth', getCookie('Auth'));
             client.setRequestHeader('sessionId', getCookie('sessionId'));
-
             client.onreadystatechange = function () { 
                 if (client.readyState == 4 && client.status == 401) {
                     alert('Unauthorized');
@@ -38,11 +54,13 @@ function process(evt) {
             }
             ;
          
-        
         vm.vatRequests().forEach(function (request) {
-            batch.vatNumbers.push(ko.unwrap(request));
+            var requestItem = {};
+            requestItem.itemId = request().itemId();
+            requestItem.vatNumber = request().vatNumber();
+            requestItem.countryCode = request().countryCode();
+            batch.vatNumbers.push(requestItem);
         })
-    
           client.send(JSON.stringify(batch));
         }
 }
@@ -67,7 +85,19 @@ function getFile(evt) { //NOT called anywhere
             client.send();
 } 
 
+function logout(evt) {
+            var client = new XMLHttpRequest();
+            client.open('DELETE', '/users/login', true);
+            client.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
+            client.setRequestHeader('Auth', getCookie('Auth'));
 
+            client.onreadystatechange = function () { 
+                if (client.readyState == 4 && client.status == 200) {
+                    
+                }
+            }
+            client.send();
+}
 // Method that checks that the browser supports the HTML5 File API
 function browserSupportFileUpload() {
   var isCompatible = false;
@@ -88,7 +118,6 @@ function upload(evt) {
     reader.onload = function(event) {
       var csvData = event.target.result;
       var csvTextArray = csvData.split('\n');
-      
       var arrayOfObjects = csvTextArray.map(function(e,i) {
         var countryCode = e.split(',')[0];
         var vatNumber = e.split(',')[1];
@@ -107,7 +136,16 @@ function upload(evt) {
      
 
       var nonEmptyValues = arrayOfObjects.filter((i)=> i.countryCode.length > 0);
-      var observableVatRequests = nonEmptyValues.map(ko.observable);
+      var observablearize = function (v) {
+          for(prop in v ){
+              if (v.hasOwnProperty(prop)) {
+                  v[prop] = ko.observable(v[prop]);
+              }
+          };
+
+          return ko.observable(v);
+      } ; 
+      var observableVatRequests = nonEmptyValues.map(observablearize);
       vm.vatRequests(observableVatRequests);
 
       //fillTable();
@@ -119,46 +157,6 @@ function upload(evt) {
     };
   }
 }
-// why do i need to make these methods myself?? 
-//function fillTable() {
-  //  var table = document.getElementById('status-table');
-
-
-    
- /**  jsonObjWithArrayOfVatCodes.item.forEach(function (vatCode) {
-        var tr = document.createElement('tr');
-
-        var td = document.createElement('td');
-        td.innerHTML = vatCode.countryCode;
-        tr.appendChild(td);
-
-        td = document.createElement('td');
-        td.innerHTML = vatCode.vatNumber;
-        tr.appendChild(td);
-
-        td = document.createElement('td');
-        td.innerHTML = vatCode.traderName;
-        tr.appendChild(td);
-
-        td = document.createElement('td');
-        td.innerHTML = vatCode.traderAddress;
-        tr.appendChild(td);
-
-        td = document.createElement('td');
-        td.innerHTML = vatCode.confirmation;
-        tr.appendChild(td);
-
-         td = document.createElement('td');
-        td.innerHTML = vatCode.requestTime;
-        tr.appendChild(td);
-
-        td = document.createElement('td');
-        td.innerHTML = vatCode.status;
-        tr.appendChild(td);
-
-        table.appendChild(tr);
-        });  */
-//}
 
 function guid() {
   function s4() {
@@ -184,38 +182,4 @@ function getCookie(cname) {
     }
     return "";
 }
-
-/**
- function submitLogin() {     
-           
-            var login = { email : document.getElementById("inputEmail3").value,
-                            password : document.getElementById("inputPassword3").value 
-                        }
-            var client = new XMLHttpRequest();
-            client.open('POST', '/users/login', true);
-            client.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-            client.onreadystatechange = function () { 
-                if (client.readyState == 4 && client.status == 200) {
-                    var token = client.getResponseHeader("Auth")
-                    document.cookie = "Auth="+token;
-                    window.location.href = "validation.html";
-                }
-            }
-            client.send(JSON.stringify(login));
-        } 
-}
- */
-
-/************* 
-function Request(itemId,countryCode,vatNumber ,traderName,traderAddress, confirmation, requestTime ,status) {
-    var self = this;
-    self.itemId = itemId;
-    self.countryCode = ko.observable(countryCode);
-    self.vatNumber = ko.observable(vatNumber);
-    self.traderName = ko.observable(traderName);
-    self.traderAddress = ko.observable(traderAddress);
-    self.confirmation = confirmation;
-    self.requestTime = requestTime;
-    self.status = status;
-} */
 

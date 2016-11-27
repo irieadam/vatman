@@ -18,7 +18,7 @@ get file with session id in http header. server
 7 VatserviceTimeOut 408
 
 Actors 
-
+Iwwwdsadcv ccxxxzxxzxx
 Client  - Vat Man - Vat Service 
 
 - When changes notify browser. 
@@ -29,11 +29,13 @@ Login - UploadReady - Status
 
 
 
+
+
         <th>countryCode</th>
         <th>vatNumber</th>
         <th>status</th>
 
-
+cccc			
 /////
 
 var requests = [{

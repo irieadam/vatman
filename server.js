@@ -1,4 +1,3 @@
-var express = require('express');
 var bodyParser = require('body-parser');
 var soap = require('soap');
 var db = require('./db.js');
@@ -6,12 +5,17 @@ var bcrypt = require('bcrypt');
 var _ = require('underscore');
 var middleware = require('./middleware.js')(db);
 var path = require('path');
-var cookieParser = require('cookie-parser')
+var cookieParser = require('cookie-parser');
 
+var express = require('express');
 var app = express();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+
 var PORT = process.env.PORT || 3000
 var requests = [];
 var arrayOfDbResults = [];
+var ioSocket;
 
 // middleware
 app.use(cookieParser());
@@ -21,6 +25,17 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 }));
 app.use('/',express.static(path.join(__dirname, 'public')));
 
+//sockets 
+io.on('connection', function (socket) {
+    console.log('client connected ' + socket.id);
+    ioSocket = socket;
+  // send the clients id to the client itself.
+ // client.send(client.id);
+
+  socket.on('disconnect', function () {
+    console.log('client disconnected');
+  });
+} );
 
 // routes
 app.get('/', function (req, res) {
@@ -32,7 +47,7 @@ app.get('/export', function (req, res) {
     var sessionId = get_cookies(req).sessionId;
     
     db.request.findAll({
-        attributes: { exclude: ['id','sessionId','requestId','itemId','createdAt','updatedAt','userId']},
+        attributes: { exclude: ['id','sessionId','requestId','itemId','createdAt','requestDate','userId']},
         where: {sessionId: sessionId }
     })
      .then(function(requests) {
@@ -95,6 +110,10 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
                 if (request.status==='3' || request.status==='5' ) {
                     request.update( {retries : request.retries+1});
                 } else {
+                    request.update( {
+                        requesterVatNumber : requesterNumber,
+                        requesterCountryCode :  requesterCountry
+                    } );
                     callVatService(request);    
                     request.update( {retries : request.retries+1});
                 }
@@ -141,7 +160,7 @@ app.post('/users/login', function(req, res){
 
 app.delete('/users/login', middleware.requireAuthentication, function (req,res) {
     req.token.destroy().then(function() {
-        res.status(204).send();
+        res.status(200).sendFile(__dirname + '/public/logout.html');
     }).catch(function () {
         res.status(500).send();
     });
@@ -150,7 +169,7 @@ app.delete('/users/login', middleware.requireAuthentication, function (req,res) 
 
 db.sequelize.sync({
     force : true }).then(function () {
-            app.listen(PORT, function () {
+            http.listen(PORT, function () {
                 
                 //create admin
               var body = { email : 'admin@vatvision.com',
@@ -180,24 +199,26 @@ function callVatService (request) {
         soap.createClient(vatServiceWSDLUrl, function(err, client) {
     
             client.checkVatApprox(checkVatApprox, function(err, result) {
+
                 if (result.valid) { 
                     request.update( {
                                     status: '3',
                                     traderName : result.traderName,
-                                    traderAddress: result.traderAddress,
+                                    traderAddress: result.traderAddress.replace(/\n/g, " "),
                                     confirmationNumber : result.requestIdentifier,
                                     requestDate : result.requestDate.toString()
                                     });
-                    } else if (!result.valid) {
+                    } else if (!err && !result.valid) {
                         request.update( {
                                     status: '5',
                                     confirmationNumber : result.requestIdentifier
                                     });
-                    } else {
+                    } else  {
                         request.update(  {
-                                    status: '4'
+                                    status: '4' 
                                     });
                     };
+                ioSocket.emit('message',request);
         });          
     });
 }
