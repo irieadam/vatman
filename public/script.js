@@ -19,10 +19,17 @@ socket.on('message', function (message) {
         return item().itemId() === message.itemId;
       }) || null;
       if (item!=null) {
+          var funcStatus;
+          if (message.status==='3') {
+            funcStatus = 'Valid';
+          } else if (message.status==='5') {
+            funcStatus = 'Not Valid';
+          }
           item().traderName(message.traderName);
           item().traderAddress(message.traderAddress);
           item().confirmation(message.confirmationNumber);
           item().requestTime(message.updatedAt);
+          item().valid(funcStatus);
           item().status(message.status);
       }
 })
@@ -118,8 +125,8 @@ function upload(evt) {
       var csvData = event.target.result;
       var csvTextArray = csvData.split('\n');
       var arrayOfObjects = csvTextArray.map(function(e,i) {
-        var countryCode = e.split(',')[0];
-        var vatNumber = e.split(',')[1];
+        var countryCode = e.split(';')[0];
+        var vatNumber = e.split(';')[1];
         return {
           itemId : guid(),
           countryCode: countryCode,
@@ -128,6 +135,7 @@ function upload(evt) {
           traderAddress: '',
           confirmation: '',
           requestTime: '',
+          valid: '',
           status : '1'
         };
         

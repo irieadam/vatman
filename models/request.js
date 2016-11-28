@@ -87,6 +87,10 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING,
         allowNull: true
     },
+    valid: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     retries: {
         type: DataTypes.INTEGER,
         allowNull: true

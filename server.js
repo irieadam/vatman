@@ -190,29 +190,43 @@ function callVatService (request) {
         var vatServiceWSDLUrl = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';  
         var checkVatApprox = {
             countryCode : request.countryCode,
-            vatNumber : request.vatNumber,
+            vatNumber : request.vatNumber.replace(/\r/g, ""),
             requesterCountryCode : request.requesterCountryCode,
-            requesterVatNumber : request.requesterVatNumber
+            requesterVatNumber : request.requesterVatNumber.replace(/\r/g, "")
         };
 
         request.status = '1';
-    
+        
+           //console.log(">>>>>>>>>>>> REQUEST " + JSON.stringify(checkVatApprox)+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+
         soap.createClient(vatServiceWSDLUrl, function(err, client) {
     
             client.checkVatApprox(checkVatApprox, function(err, result) {
+            
+  // console.log(">>>>>>>>>>>>" + JSON.stringify(result) + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
                 if (result.valid) { 
+                    var validText = "";
+
+                    if  (result.valid) {
+                        validText  = "Valid"
+                    } else {
+                        validText  = "Not Valid"
+                    };
+
                     request.update( {
                                     status: '3',
                                     traderName : result.traderName,
                                     traderAddress: result.traderAddress.replace(/\n/g, " "),
                                     confirmationNumber : result.requestIdentifier,
+                                    valid : validText,
                                     requestDate : result.requestDate.toString()
                                     });
                     } else if (!err && !result.valid) {
                         request.update( {
                                     status: '5',
-                                    confirmationNumber : result.requestIdentifier
+                                    confirmationNumber : result.requestIdentifier,
+                                    valid : validText,
                                     });
                     } else  {
                         request.update(  {
