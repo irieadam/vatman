@@ -47,7 +47,7 @@ app.get('/export', function (req, res) {
     var sessionId = get_cookies(req).sessionId;
     
     db.request.findAll({
-        attributes: { exclude: ['id','sessionId','requestId','itemId','createdAt','requestDate','userId']},
+        attributes: { exclude: ['id','sessionId','requestId','itemId','createdAt','retries','requestDate','userId']},
         where: {sessionId: sessionId }
     })
      .then(function(requests) {
@@ -197,36 +197,35 @@ function callVatService (request) {
 
         request.status = '1';
         
-           //console.log(">>>>>>>>>>>> REQUEST " + JSON.stringify(checkVatApprox)+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+       //    console.log(">>>>>>>>>>>> REQUEST " + JSON.stringify(checkVatApprox)+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
         soap.createClient(vatServiceWSDLUrl, function(err, client) {
     
             client.checkVatApprox(checkVatApprox, function(err, result) {
             
-  // console.log(">>>>>>>>>>>>" + JSON.stringify(result) + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+   //console.log(">>>>>>>>>>>>" + JSON.stringify(result) + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
                 if (result.valid) { 
-                    var validText = "";
 
-                    if  (result.valid) {
-                        validText  = "Valid"
-                    } else {
-                        validText  = "Not Valid"
-                    };
+                    // address 
+                    var address ="";
+                    if (!result.traderAddress==='undefined') {
+                        address = result.traderAddress.replace(/\n/g, " ")
+                    }
 
                     request.update( {
                                     status: '3',
                                     traderName : result.traderName,
-                                    traderAddress: result.traderAddress.replace(/\n/g, " "),
+                                    traderAddress: address,
                                     confirmationNumber : result.requestIdentifier,
-                                    valid : validText,
+                                    valid : "Valid",
                                     requestDate : result.requestDate.toString()
                                     });
                     } else if (!err && !result.valid) {
                         request.update( {
                                     status: '5',
                                     confirmationNumber : result.requestIdentifier,
-                                    valid : validText,
+                                    valid : "Not Valid",
                                     });
                     } else  {
                         request.update(  {
