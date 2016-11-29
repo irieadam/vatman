@@ -56,9 +56,9 @@
     <div class="row">
     </div>
 
-    <div class="row" >
+ <div class="row" >
 
-      <div id="status-table-div" class="col-md-12" >
+     <div id="status-table-div" class="col-md-12" >
         <table id="status-table" class="table table-bordered">
        <thead>
             <tr>
@@ -89,10 +89,43 @@
           </tfoot>
             
         </table>
+      </div> 
+           <!--   <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4>
+                    Fixed Header Scrolling Table 
+                  </h4>
+                </div>
+                <table class="table table-fixed">
+                  <thead>
+                    <tr>
+                        <th class="col-xs-1">Country Code</th>
+                        <th class="col-xs-2">Vat Number</th>
+                        <th class="col-xs-2">Trader Name</th>
+                        <th class="col-xs-2">Trader Address</th>
+                        <th class="col-xs-2">Confirmation</th>
+                        <th class="col-xs-2">RequestTime</th>
+                        <th class="col-xs-1">Valid</th>
+                    </tr>
+                  </thead>
+                    <tbody data-bind="foreach: vatRequests">
+                    
+                    <tr data-bind="css: { success: status() == 3,danger: status() == 5, warning: status() == 4 ,active: status() == 1}">
+                      <td class="col-xs-1" data-bind="text: countryCode"></td>
+                      <td class="col-xs-2" data-bind="text: vatNumber"></td>
+                      <td class="col-xs-2" data-bind="text: traderName"></td>
+                      <td class="col-xs-2" data-bind="text: traderAddress"></td>
+                      <td class="col-xs-2" data-bind="text: confirmation"></td>
+                      <td class="col-xs-2" data-bind="text: requestTime"></td>
+                      <td class="col-xs-1" data-bind="text: valid"></td>
+            
+                   </tr>
 
-
-      </div>
-    </div>
+                   </tbody>
+                </table>
+              </div>-->
+          </div>
+ 
 
     <div id="bottom-buttons" class="row">
       <div class="col-md-6">

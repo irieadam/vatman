@@ -19,17 +19,12 @@ socket.on('message', function (message) {
         return item().itemId() === message.itemId;
       }) || null;
       if (item!=null) {
-          var funcStatus;
-          if (message.status==='3') {
-            funcStatus = 'Valid';
-          } else if (message.status==='5') {
-            funcStatus = 'Not Valid';
-          }
+
           item().traderName(message.traderName);
           item().traderAddress(message.traderAddress);
           item().confirmation(message.confirmationNumber);
           item().requestTime(message.updatedAt);
-          item().valid(funcStatus);
+          item().valid(message.valid);
           item().status(message.status);
       }
 })
@@ -62,10 +57,14 @@ function process(evt) {
          
         vm.vatRequests().forEach(function (request) {
             var requestItem = {};
-            requestItem.itemId = request().itemId();
-            requestItem.vatNumber = request().vatNumber();
-            requestItem.countryCode = request().countryCode();
-            batch.vatNumbers.push(requestItem);
+           if (request().status()=== '3' || request().status()=== '5' ) { 
+                //skip
+            } else {
+                requestItem.itemId = request().itemId();
+                requestItem.vatNumber = request().vatNumber();
+                requestItem.countryCode = request().countryCode();
+                batch.vatNumbers.push(requestItem);
+            }
         })
           client.send(JSON.stringify(batch));
         }

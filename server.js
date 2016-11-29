@@ -27,7 +27,7 @@ app.use('/',express.static(path.join(__dirname, 'public')));
 
 //sockets 
 io.on('connection', function (socket) {
-    console.log('client connected ' + socket.id);
+   // console.log('client connected ' + socket.id);
     ioSocket = socket;
   // send the clients id to the client itself.
  // client.send(client.id);
@@ -197,13 +197,12 @@ function callVatService (request) {
 
         request.status = '1';
         
-       //    console.log(">>>>>>>>>>>> REQUEST " + JSON.stringify(checkVatApprox)+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+      //  console.log(">>>>>>>>>>>> REQUEST " + JSON.stringify(checkVatApprox)+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
         soap.createClient(vatServiceWSDLUrl, function(err, client) {
     
             client.checkVatApprox(checkVatApprox, function(err, result) {
             
-   //console.log(">>>>>>>>>>>>" + JSON.stringify(result) + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
                 if (result.valid) { 
 
@@ -229,8 +228,10 @@ function callVatService (request) {
                                     });
                     } else  {
                         request.update(  {
-                                    status: '4' 
+                                    status: '4',
+                                    valid : "Failed",
                                     });
+                         console.log(JSON.stringify(result));
                     };
                 ioSocket.emit('message',request);
         });          
