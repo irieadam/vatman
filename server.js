@@ -76,6 +76,7 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
     var vatNumbers = req.body.vatNumbers;
     //var sessionId = req.get('sessionId');
     var sessionId = get_cookies(req).sessionId;
+    var ioId =  get_cookies(req).io;
     // validations
     res.status(200).send();
     
@@ -101,7 +102,7 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
                             retries : 0
                         }).then(function (request) {
 
-                            callVatService(request);
+                            callVatService(request,ioId);
                             
                         } ).catch(function (e){
                             console.log(e);
@@ -114,7 +115,7 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
                         requesterVatNumber : requesterNumber,
                         requesterCountryCode :  requesterCountry
                     } );
-                    callVatService(request);    
+                    callVatService(request,ioId);    
                     request.update( {retries : request.retries+1});
                 }
             }
@@ -186,7 +187,7 @@ db.sequelize.sync({
              
 });
 
-function callVatService (request) {
+function callVatService (request,ioId) {
         var vatServiceWSDLUrl = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';  
         var checkVatApprox = {
             countryCode : request.countryCode,
@@ -233,7 +234,8 @@ function callVatService (request) {
                                     });
                          console.log(JSON.stringify(result));
                     };
-                ioSocket.emit('message',request);
+                //ioSocket.emit('message',request);
+                io.to(ioId).emit('message',request);
         });          
     });
 }
