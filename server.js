@@ -47,7 +47,7 @@ app.get('/export', function (req, res) {
     var sessionId = get_cookies(req).sessionId;
     
     db.request.findAll({
-        attributes: { exclude: ['id','sessionId','requestId','itemId','createdAt','retries','requestDate','userId']},
+        attributes: { exclude: ['id','sessionId','requestId','itemId','createdAt','retries','status','requestDate','userId']},
         where: {sessionId: sessionId }
     })
      .then(function(requests) {
