@@ -92,17 +92,21 @@ function getFile(evt) { //NOT called anywhere
 } 
 
 function logout(evt) {
-            var client = new XMLHttpRequest();
-            client.open('DELETE', '/users/login', true);
-            client.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
-            client.setRequestHeader('Auth', getCookie('Auth'));
+    console.log(window.location);
+  //  debugger;
+    window.location.href="http://localhost:8000/users/login.html";
+        //     var client = new XMLHttpRequest();
+        //     client.open('POST', '/users/logout', true);
+        //    // client.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
+        //     client.setRequestHeader('Auth', getCookie('Auth'));
 
-            client.onreadystatechange = function () { 
-                if (client.readyState == 4 && client.status == 200) {
+        //     client.onreadystatechange = function (foo) { 
+   
+        //         if (client.readyState == 4 && client.status == 302) {
                     
-                }
-            }
-            client.send();
+        //         }
+        //     }
+        //     client.send();
 }
 // Method that checks that the browser supports the HTML5 File API
 function browserSupportFileUpload() {

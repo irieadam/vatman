@@ -39,7 +39,8 @@ io.on('connection', function (socket) {
 
 // routes
 app.get('/', function (req, res) {
-   res.sendFile(__dirname + '/public/login.html');
+    
+       res.sendFile(__dirname + '/public/login.html');
 });
 
 app.get('/export', function (req, res) {
@@ -159,11 +160,14 @@ app.post('/users/login', function(req, res){
     
 });
 
-app.delete('/users/login', middleware.requireAuthentication, function (req,res) {
+app.get('/logout', middleware.requireAuthentication, function (req,res) {
     req.token.destroy().then(function() {
-       // res.status(200).sendFile(__dirname + '/public/logout.html');
-        res.redirect('/');
-    }).catch(function () {
+      
+     
+      res.status(200).sendFile(__dirname + '/public/login.html');
+      //res.redirect('/users/login');
+    //res.status(204).se/users/loginnd();    
+}).catch(function () {
         res.status(500).send();
     });
     

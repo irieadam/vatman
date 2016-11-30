@@ -80,7 +80,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     },
     requestDate: {
-        type: DataTypes.STRING,
+        type: DataTypes.DATE,
         allowNull: true
     },
     confirmationNumber: {
