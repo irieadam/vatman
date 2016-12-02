@@ -15,7 +15,7 @@
 
 <body>
 
-  <div class="container">
+  <div id="main-container" class="container">
 
     <div class="row">
       <div class=" col-md-6 col-sm-6">
@@ -44,7 +44,7 @@
         <div class="fileupload fileupload-new" data-provides="fileupload">
           <span class="btn btn-primary btn-file"><span class="fileupload-new">Select file to upload</span>
           <span class="fileupload-exists">Change</span>
-          <input type="file" type="file" name="File Upload" id="txtFileUpload" accept=".csv"/>
+          <input type="file" type="file" name="File Upload" id="txtFileUpload" accept=".csv, application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
           </span>
           <span class="fileupload-preview"></span>
           <a href="#" class="close fileupload-exists" data-dismiss="fileupload" style="float: none">×</a>
@@ -57,7 +57,6 @@
     </div>
 
  <div class="row" >
-
      <div id="status-table-div" class="col-md-12" >
         <table id="status-table" class="table table-bordered">
        <thead>
@@ -82,68 +81,32 @@
             <td data-bind="text: valid"></td>
             
              </tr>
-
           </tbody>
           <tfoot>
             <td colspan="7"></td>
           </tfoot>
-            
         </table>
-      </div> 
-          <!--  <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h4>
-                    Fixed Header Scrolling Table 
-                  </h4>
-                </div>
-                <table class="table table-fixed">
-                  <thead>
-                    <tr>
-                        <th class="col-xs-1">Country Code</th>
-                        <th class="col-xs-2">Vat Number</th>
-                        <th class="col-xs-2">Trader Name</th>
-                        <th class="col-xs-2">Trader Address</th>
-                        <th class="col-xs-2">Confirmation</th>
-                        <th class="col-xs-2">RequestTime</th>
-                        <th class="col-xs-1">Valid</th>
-                    </tr>
-                  </thead>
-                    <tbody data-bind="foreach: vatRequests">
-                    
-                    <tr data-bind="css: { success: status() == 3,danger: status() == 5, warning: status() == 4 ,active: status() == 1}">
-                      <td class="col-xs-1" data-bind="text: countryCode"></td>
-                      <td class="col-xs-2" data-bind="text: vatNumber"></td>
-                      <td class="col-xs-2" data-bind="text: traderName"></td>
-                      <td class="col-xs-2" data-bind="text: traderAddress"></td>
-                      <td class="col-xs-2" data-bind="text: confirmation"></td>
-                      <td class="col-xs-2" data-bind="text: requestTime"></td>
-                      <td class="col-xs-1" data-bind="text: valid"></td>
-            
-                   </tr>
-
-                   </tbody>
-                </table>
-              </div>
-          </div> -->
- 
-
-    <div id="bottom-buttons" class="row">
-      <div class="col-md-6">
-        <button id="validateNumbers" class="btn btn-primary">Validate</button>
-      </div>
-      <div class="col-md-6">
-        <form action="/export" method="get">
-          <input type="submit" class="btn btn-primary float-md-right float-sm-right" value="Export"></input>
-        </form>  
-      </div>
-    </div>
-
-   
+      </div>  
   </div>
+  <div id="bottom-buttons" class="row">
+  <div class="col-md-6">
+    <button id="validateNumbers" class="btn btn-primary">Validate</button>
+  </div>
+  <div class="col-md-6">
+    <form action="/export" method="get">
+      <input type="submit" class="btn btn-primary float-md-right float-sm-right" value="Export"></input>
+    </form>  
+  </div>
+</div>
+
 <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-debug.js" type="text/javascript"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/xls/0.7.4-a/xls.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.0/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
+
 <script src="../script.js"></script>
-   
+
 </body>
 
 </html>

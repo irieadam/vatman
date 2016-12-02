@@ -7,6 +7,12 @@ ko.applyBindings(vm);
 
 var socket = io();
 
+var dropbox;
+
+dropbox = document.getElementById("main-container");
+dropbox.addEventListener("dragenter", dragenter, false);
+dropbox.addEventListener("dragover", dragover, false);
+dropbox.addEventListener("drop", drop, false);
 
 // The event listener for the file upload
 document.getElementById('txtFileUpload').addEventListener('change', upload, false);
@@ -15,7 +21,7 @@ document.getElementById('logout').addEventListener('click', logout, false);
 //document.getElementById('exportResult').addEventListener('click', getFile, false);
 
 socket.on('message', function (message) {
-     console.log(JSON.stringify(message));
+     //console.log(JSON.stringify(message));
      var item = ko.utils.arrayFirst(vm.vatRequests(), function (item) {
         return item().itemId() === message.itemId;
       }) || null;
@@ -71,102 +77,9 @@ function process(evt) {
         }
 }
 
-function getFile(evt) { //NOT called anywhere
-            var client = new XMLHttpRequest();
-            client.open('GET', '/export', true);
-           // client.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-            client.setRequestHeader('Auth', getCookie('Auth'));
-            client.setRequestHeader('sessionId', getCookie('sessionId'));
-
-            client.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
-            client.setRequestHeader('Accept-Encoding', 'gzip, deflate, sdch, br');
-            client.setRequestHeader('Accept-Language', 'en-US,en;q=0.8,nl;q=0.6');
-            client.setRequestHeader('Upgrade-Insecure-Requests', 1);
-
-            client.onreadystatechange = function () { 
-                if (client.readyState == 4 && client.status == 401) {
-                    alert('Unauthorized');
-                }
-            }
-            client.send();
-} 
-
 function logout(evt) {
     console.log(window.location);
-  //  debugger;
     window.location.href="http://localhost:8000/users/login.html";
-        //     var client = new XMLHttpRequest();
-        //     client.open('POST', '/users/logout', true);
-        //    // client.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
-        //     client.setRequestHeader('Auth', getCookie('Auth'));
-
-        //     client.onreadystatechange = function (foo) { 
-   
-        //         if (client.readyState == 4 && client.status == 302) {
-                    
-        //         }
-        //     }
-        //     client.send();
-}
-// Method that checks that the browser supports the HTML5 File API
-function browserSupportFileUpload() {
-  var isCompatible = false;
-  if (window.File && window.FileReader && window.FileList && window.Blob) {
-    isCompatible = true;
-  }
-  return isCompatible;
-} 
-// Method that reads and processes the selected file
-function upload(evt) {
-  if (!browserSupportFileUpload()) {
-    alert('The File APIs are not fully supported in this browser!');
-  } else {
-    var data = null;
-    var file = evt.target.files[0];
-    var reader = new FileReader();
-    reader.readAsText(file);
-    reader.onload = function(event) {
-      var csvData = event.target.result;
-      var csvTextArray = csvData.split('\n');
-      var arrayOfObjects = csvTextArray.map(function(e,i) {
-        var countryCode = e.split(';')[0];
-        var vatNumber = e.split(';')[1];
-        return {
-          itemId : guid(),
-          countryCode: countryCode,
-          vatNumber: vatNumber,
-          traderName: '',
-          traderAddress: '',
-          confirmation: '',
-          requestTime: '',
-          valid: '',
-          status : '1'
-        };
-        
-      });
-     
-
-      var nonEmptyValues = arrayOfObjects.filter((i)=> i.countryCode.length > 0);
-      var observablearize = function (v) {
-          for(prop in v ){
-              if (v.hasOwnProperty(prop)) {
-                  v[prop] = ko.observable(v[prop]);
-              }
-          };
-
-          return ko.observable(v);
-      } ; 
-      var observableVatRequests = nonEmptyValues.map(observablearize);
-      vm.vatRequests(observableVatRequests);
-
-      //fillTable();
-      fileSelected = true;
-      
-    };
-    reader.onerror = function() {
-      alert('Unable to read ' + file.fileName);
-    };
-  }
 }
 
 function guid() {
@@ -194,3 +107,136 @@ function getCookie(cname) {
     return "";
 }
 
+// functions for file transfer 
+function dragenter(e) {
+  e.stopPropagation();
+  e.preventDefault();
+}
+
+function dragover(e) {
+  e.stopPropagation();
+  e.preventDefault();
+}
+
+function drop(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  var dt = e.dataTransfer;
+  var files = dt.files;
+
+  handleFiles(files);
+}
+
+
+function browserSupportFileUpload() {
+  var isCompatible = false;
+  if (window.File && window.FileReader && window.FileList && window.Blob) {
+    isCompatible = true;
+  }
+  return isCompatible;
+} 
+// Method that reads and processes the selected csv file
+function upload(evt) {
+  if (!browserSupportFileUpload()) {
+    alert('The File APIs are not fully supported in this browser!');
+  } else {
+    handleFiles(evt.target.files);
+  }
+}
+
+function handleFiles (files) {
+    var data = null;
+    var file = files[0];
+    var reader = new FileReader();
+    var fileType = file.type;
+    var csvData; 
+
+    if (fileType === "text/csv") {          
+        reader.readAsText(file);
+    } else if (fileType === "application/vnd.ms-excel" || fileType ===  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+        reader.readAsBinaryString(file);
+    }
+
+    reader.onload = function(event) {
+      if (fileType === "text/csv") {
+         csvData = event.target.result;
+      } else if (fileType === "application/vnd.ms-excel" || fileType ===  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")  {
+         var data = event.target.result;
+         var cfb = XLSX.read(data, {type: 'binary'});
+         var sheetName = cfb.SheetNames[0];
+         csvData = XLS.utils.make_csv(cfb.Sheets[sheetName]);   
+      }
+
+      // format input
+      var csvTextArray = csvData.split('\n');
+      var arrayOfObjects = csvTextArray.map(function(e,i) {
+      var countryCode = e.split(';')[0];
+      var vatNumber = e.split(';')[1];
+       
+       // deal with commas
+        if (typeof vatNumber =='undefined' || typeof countryCode =='undefined') {
+            countryCode = e.split(',')[0];
+            vatNumber =  e.split(',')[1];
+        };
+
+        return {
+          itemId : guid(),
+          countryCode: countryCode,
+          vatNumber: vatNumber,
+          traderName: '',
+          traderAddress: '',
+          confirmation: '',
+          requestTime: '',
+          valid: '',
+          status : '1'
+        };
+        
+      });
+     
+
+      //var nonEmptyValues = arrayOfObjects.filter((i)=> i.countryCode.length > 0);
+      var observablearize = function (v) {
+          for(prop in v ){
+              if (v.hasOwnProperty(prop)) {
+                  v[prop] = ko.observable(v[prop]);
+              }
+          };
+
+          return ko.observable(v);
+      } ; 
+      var observableVatRequests = arrayOfObjects.map(observablearize);
+      vm.vatRequests(observableVatRequests);
+
+      //fillTable();
+      fileSelected = true;
+      
+    };
+    reader.onerror = function() {
+      alert('Unable to read ' + file.fileName);
+    };
+
+}
+
+function saveData() {
+  
+}
+
+function getFile(evt) { //NOT called anywhere
+            var client = new XMLHttpRequest();
+            client.open('GET', '/export', true);
+           // client.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+            client.setRequestHeader('Auth', getCookie('Auth'));
+            client.setRequestHeader('sessionId', getCookie('sessionId'));
+
+            client.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
+            client.setRequestHeader('Accept-Encoding', 'gzip, deflate, sdch, br');
+            client.setRequestHeader('Accept-Language', 'en-US,en;q=0.8,nl;q=0.6');
+            client.setRequestHeader('Upgrade-Insecure-Requests', 1);
+
+            client.onreadystatechange = function () { 
+                if (client.readyState == 4 && client.status == 401) {
+                    alert('Unauthorized');
+                }
+            }
+            client.send();
+} 
