@@ -31,7 +31,7 @@ socket.on('message', function (message) {
           item().traderName(message.traderName);
           item().traderAddress(message.traderAddress);
           item().confirmation(message.confirmationNumber);
-          item().requestTime(message.updatedAt);
+          item().requestTime(message.updatedAt.toString().substring(0,10));
           item().valid(message.valid);
           item().status(message.status);
       }
@@ -185,6 +185,10 @@ function handleFiles (files) {
             countryCode = e.split(',')[0];
             vatNumber =  e.split(',')[1];
         };
+
+        // remove spaces
+        countryCode = countryCode.replace(" ","");
+        vatNumber = vatNumber.replace(" ","");
 
         return {
           itemId : guid(),
