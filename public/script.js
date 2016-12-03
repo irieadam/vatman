@@ -18,6 +18,7 @@ dropbox.addEventListener("drop", drop, false);
 document.getElementById('txtFileUpload').addEventListener('change', upload, false);
 document.getElementById('validateNumbers').addEventListener('click', process, false);
 document.getElementById('logout').addEventListener('click', logout, false);
+document.getElementById('clear').addEventListener('click', clear, false);
 //document.getElementById('exportResult').addEventListener('click', getFile, false);
 
 socket.on('message', function (message) {
@@ -35,6 +36,12 @@ socket.on('message', function (message) {
           item().status(message.status);
       }
 })
+
+function clear(evt) {
+   
+    vm.vatRequests.remove(function (status) {return status != 999});
+ 
+}
 
 function process(evt) {
     var requesterCountryCode = document.getElementById("requesterCountry").value;
