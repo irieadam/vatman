@@ -2,7 +2,10 @@ var jsonObjWithArrayOfVatCodes = {item : [] } ;
 var batch;
 var fileSelected = false;
 
-var vm = { vatRequests : ko.observableArray([])};
+var vm = {  requesterCountryCode : ko.observable(""),
+            requesterVatNumber : ko.observable(""),
+            vatRequests : ko.observableArray([])
+            };
 var failureCount = ko.computed(function() {
     var items = ko.utils.arrayFilter(vm.vatRequests(), function(item) {
          return item().status() === "4";
@@ -26,7 +29,6 @@ document.getElementById('txtFileUpload').addEventListener('change', upload, fals
 document.getElementById('validateNumbers').addEventListener('click', process, false);
 document.getElementById('logout').addEventListener('click', logout, false);
 document.getElementById('clear').addEventListener('click', clear, false);
-//document.getElementById('exportResult').addEventListener('click', getFile, false);
 
 socket.on('message', function (message) {
     // console.log(JSON.stringify(message));
@@ -51,43 +53,50 @@ function clear(evt) {
  
 }
 
-function process(evt) {
-    var requesterCountryCode = document.getElementById("requesterCountry").value;
-    var requesterVatNumber = document.getElementById("requesterVat").value;
-        if (!fileSelected || requesterCountryCode.length===0 || requesterVatNumber.length===0) {
-            alert('Please correct your input');
+function process(evt) { 
+
+    if (!fileSelected || vm.requesterCountryCode().length===0 || vm.requesterVatNumber().length===0) {
+            var messages = ["Please provide: "];
+
+            if (!fileSelected ) {
+                messages.push("vat numbers to process ");
+            };
+            if (vm.requesterCountryCode().length ==0) {
+                messages.push("requestor country code ");
+            };
+            if (vm.requesterVatNumber().length ==0) {
+                messages.push("requestor vat number ");
+            };
+            alert(messages.toString()) ;
+
         } else {
-           batch = {
-                "requestId" : guid(),
-                "requesterCountryCode" : requesterCountryCode,
-                "requesterVatNumber" : requesterVatNumber,
-                "vatNumbers" : []
+
+        batch = {
+            "requestId" : guid(),
+            "requesterCountryCode" : vm.requesterCountryCode(),
+            "requesterVatNumber" : vm.requesterVatNumber(),
+            "vatNumbers" : []
+        }
+
+        var client = new XMLHttpRequest();
+        client.open('POST', '/process', true);
+        client.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+        client.onreadystatechange = function () { 
+            if (client.readyState == 4 && client.status == 401) {
+                alert('Unauthorized');
+            } else if (client.readyState == 4 && client.status == 200) {
+                // alert('Submitted');
             }
-            var client = new XMLHttpRequest();
-            client.open('POST', '/process', true);
-            client.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-            client.setRequestHeader('Auth', getCookie('Auth'));
-            client.setRequestHeader('sessionId', getCookie('sessionId'));
-            client.onreadystatechange = function () { 
-                if (client.readyState == 4 && client.status == 401) {
-                    alert('Unauthorized');
-                } else if (client.readyState == 4 && client.status == 200) {
-                   // alert('Submitted');
-                }
-            }
-            ;
-         
+        }
+        ;
+        
         vm.vatRequests().forEach(function (request) {
-            var requestItem = {};
-       //    if (request().status()=== '3' || request().status()=== '5' ) { 
-                //skip
-      //      } else {
-                requestItem.itemId = request().itemId();
-                requestItem.vatNumber = request().vatNumber();
-                requestItem.countryCode = request().countryCode();
-                batch.vatNumbers.push(requestItem);
-        //    }
-        })
+        var requestItem = {};
+            requestItem.itemId = request().itemId();
+            requestItem.vatNumber = request().vatNumber();
+            requestItem.countryCode = request().countryCode();
+            batch.vatNumbers.push(requestItem);
+            })
           client.send(JSON.stringify(batch));
         }
 }
@@ -173,8 +182,10 @@ function handleFiles (files) {
     }
 
     reader.onload = function(event) {
+
       if (fileType === "text/csv") {
          csvData = event.target.result;
+
       } else if (fileType === "application/vnd.ms-excel" || fileType ===  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")  {
          var data = event.target.result;
          var cfb = XLSX.read(data, {type: 'binary'});
@@ -222,7 +233,8 @@ function handleFiles (files) {
       });
      
 
-     // var nonEmptyValues = arrayOfObjects.filter((i)=> i.countryCode.length > 0);
+     var nonEmptyValues = arrayOfObjects.filter((i)=> i.countryCode.length > 0);
+     
       var observablearize = function (v) {
           for(prop in v ){
               if (v.hasOwnProperty(prop)) {
@@ -232,7 +244,7 @@ function handleFiles (files) {
 
           return ko.observable(v);
       } ; 
-      var observableVatRequests = arrayOfObjects.map(observablearize);
+      var observableVatRequests = nonEmptyValues.map(observablearize);
       vm.vatRequests(observableVatRequests);
 
       //fillTable();
@@ -245,9 +257,16 @@ function handleFiles (files) {
 
 }
 
-function saveItem (evt) {
+function updateItem (evt) {
     debugger;
+}
 
+function setRequesterVatNumber() {
+        vm.requesterVatNumber(document.getElementById("requesterVat").value);
+}
+
+function setRequesterCountryCode() {
+         vm.requesterCountryCode(document.getElementById("requesterCountry").value);
 }
 
 function getFile(evt) { //NOT called anywhere

@@ -28,16 +28,20 @@
       </div>
       </div>
 
-    <div id="requestor-input-boxes" class="row">
-      <div class=" col-md-12 col-sm-12">
-        <div class="form-group col-lg-8 col-md-7 col-sm-7">
-          <label for="requesterVat">Requester VAT</label>
-          <input type="text" class="form-control" id="requesterVat" placeholder="124567896B01">
-        </div>
-        <div class="form-group col-lg-4 col-md-5 col-sm-5">
-          <label for="requesterCountry" class="">Requester Country</label>
-          <input type="text" class="form-control" id="requesterCountry" placeholder="NL">
-        </div>
+  <div id="requestor-input-boxes" class="row">
+    <div class=" col-md-12 col-sm-12">
+      <div class="form-group col-lg-8 col-md-7 col-sm-7">
+        <label for="requesterVat">Requester VAT</label>
+        <input type="text" class="form-control" id="requesterVat" placeholder="124567896B01"  
+                data-bind="text: requesterVatNumber(),css : { success:  requesterVatNumber().length > 1, danger: requesterVatNumber().length < 1}" 
+                onchange="setRequesterVatNumber()">
+      </div>
+      <div class="form-group col-lg-4 col-md-5 col-sm-5">
+        <label for="requesterCountry" class="">Requester Country</label>
+        <input type="text" class="form-control" id="requesterCountry" placeholder="NL" 
+                data-bind="text: requesterCountryCode(),css : { success:  requesterVatNumber().length > 1, danger: requesterVatNumber().length < 1}" 
+                onchange="setRequesterCountryCode()">
+      </div>
 
     <div class="row"> 
       <div class=" col-md-1 col-sm-1 ">
@@ -79,7 +83,7 @@
               <th>Retries</th>
             </tr>
           </thead> 
-          <tbody data-bind="foreach: vatRequests">
+          <tbody data-bind="foreach: vatRequests" id="status-table-body">
              <tr data-bind="css: { success: status() == 3,danger: status() == 4, warning: status() == 5 ,active: status() == 1}">
             <td contenteditable='true' data-bind="text: countryCode"></td>
             <td contenteditable='true' data-bind="text: vatNumber"></td>
@@ -93,7 +97,7 @@
              </tr>
           </tbody>
           <tfoot>
-            <td colspan="8"></td>
+            <td colspan="8" id="status-table-footer"></td>
           </tfoot>
         </table>
       </div>  
@@ -104,9 +108,11 @@
     <button id="validateNumbers" class="btn btn-primary">Validate</button>
   </div>
   <div class="col-md-6">
-    <form action="/export" method="get">
+    <form action="/export" method="post">
       <input type="submit" class="btn btn-primary float-md-right float-sm-right" value="Export"></input>
     </form>  
+    <label class="radio float-md-right float-sm-right"><input type="radio" name="optradio">.csv</label>
+    <label id="xcelCheck" class="radio float-md-right float-sm-right"><input type="radio" name="optradio" checked>.xslx</label>
   </div>
 </div>
 

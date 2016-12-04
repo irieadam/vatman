@@ -33,14 +33,14 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-            len: [1, 30]
+            len: [0, 30]
         }
     },
     countryCode: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
         validate: {
-            len: [2]
+            len: [0,5]
         }
     },
     traderName: {

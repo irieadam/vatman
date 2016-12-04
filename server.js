@@ -43,7 +43,7 @@ app.get('/', function (req, res) {
        res.sendFile(__dirname + '/public/login.html');
 });
 
-app.get('/export', middleware.requireAuthentication, function (req, res) {
+app.post('/export', middleware.requireAuthentication, function (req, res) {
     var sessionId = get_cookies(req).sessionId;
     var lastRequest = get_cookies(req).lastRequest;
     var type = 2; //1 = csv ,2 = excel 
@@ -265,7 +265,7 @@ function callVatService (request,ioId) {
 
                     // address 
                     var address ="";
-                    if (result.traderAddress != 'undefined') {
+                    if (typeof result.traderAddress != 'undefined') {
                         address = result.traderAddress.replace(/\n/g, " ")
                     }
 
