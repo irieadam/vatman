@@ -14,7 +14,6 @@ var io = require('socket.io')(http);
 
 var PORT = process.env.PORT || 3000
 var requests = [];
-var arrayOfDbResults = [];
 var ioSocket;
 
 // middleware
@@ -47,6 +46,7 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
     var sessionId = get_cookies(req).sessionId;
     var lastRequest = get_cookies(req).lastRequest;
     var xlsx = "on";//req.body.xslx; //1 = csv ,2 = excel 
+    var arrayOfDbResults = [];
     // get data
     db.request.findAll({
         attributes: { exclude: ['id', 'sessionId', 'requestId', 'itemId', 'createdAt', 'requesterVatNumber', 'requesterCountryCode', 'status', 'requestDate', 'userId'] },
