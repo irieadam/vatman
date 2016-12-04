@@ -29,7 +29,7 @@ document.getElementById('clear').addEventListener('click', clear, false);
 //document.getElementById('exportResult').addEventListener('click', getFile, false);
 
 socket.on('message', function (message) {
-     console.log(JSON.stringify(message));
+    // console.log(JSON.stringify(message));
      var item = ko.utils.arrayFirst(vm.vatRequests(), function (item) {
         return item().itemId() === message.itemId;
       }) || null;
