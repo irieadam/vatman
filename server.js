@@ -6,7 +6,7 @@ var _ = require('underscore');
 var middleware = require('./middleware.js')(db);
 var path = require('path');
 var cookieParser = require('cookie-parser');
-
+var excel = require('node-xlsx').default;
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
@@ -43,13 +43,15 @@ app.get('/', function (req, res) {
        res.sendFile(__dirname + '/public/login.html');
 });
 
-app.get('/export', function (req, res) {
-    //var sessionId = req.get('sessionId');
+app.get('/export', middleware.requireAuthentication, function (req, res) {
     var sessionId = get_cookies(req).sessionId;
+    var lastRequest = get_cookies(req).lastRequest;
+    var type = 2; //1 = csv ,2 = excel 
     
+    // get data
     db.request.findAll({
-        attributes: { exclude: ['id','sessionId','requestId','itemId','createdAt','status','requestDate','userId']},
-        where: {sessionId: sessionId }
+        attributes: { exclude: ['id','sessionId','requestId','itemId','createdAt','requesterVatNumber','requesterCountryCode','status','requestDate','userId']},
+        where: {requestId: lastRequest }
     })
      .then(function(requests) {
          var jsonObject;
@@ -58,27 +60,70 @@ app.get('/export', function (req, res) {
              arrayOfDbResults.push(request);
             }
          );
-         jsonObject = JSON.stringify(arrayOfDbResults);
-         file = ConvertToCSV(jsonObject);
-         
-         res.status(200).set({
-            'Content-Type': 'text/csv',//'text/plain',
-            'Content-Disposition': contentDisposition(sessionId+'.csv')
-        }).send(file);
+     
+     // send csv or excel
+     if (type === 1 ) {    
+            jsonObject = JSON.stringify(arrayOfDbResults);
+            file = ConvertToCSV(jsonObject);
+            
+            res.status(200).set({
+                'Content-Type': 'text/csv',//'text/plain',//application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+                'Content-Disposition': "attachment; filename=" + sessionId+'.csv'
+            }).send(file);  
+       
+     } else if (type === 2 ) {
+            var headers = ["Country Code",
+                    "Vat Number",
+                    "Trader Name",
+                    "Trader Address",  
+                    "Confirmation",  
+                    "RequestDate", 
+                    "Valid",  
+                    "Retries"  ];
+            var data = [headers];
 
+        // for each db result row, get values into array and add array to data array
+            arrayOfDbResults.forEach(function (item) {
+                var dataValues = item.dataValues;
+                var resultValues = [];
+               /** for (prop in dataValues) {
+
+                    if (dataValues.hasOwnProperty(prop)) {
+                        resultValues.push(dataValues[prop]);
+                    }
+                };  */
+                resultValues.push(dataValues.countryCode);
+                resultValues.push(dataValues.vatNumber);
+                resultValues.push(dataValues.traderName);
+                resultValues.push(dataValues.traderAddress);
+                resultValues.push(dataValues.confirmationNumber);
+                resultValues.push(dataValues.updatedAt);
+                resultValues.push(dataValues.valid);
+                resultValues.push(dataValues.retries);
+                data.push(resultValues);
+            } );
+        
+            var file = excel.build([{name: "results", data: data}]);
+            
+            res.status(200).set({
+                'Content-Type': 'application/vnd.ms-excel',
+                'Content-Transfer-Encoding': 'binary',
+                'Content-Disposition': "attachment; filename=" + sessionId+'.xlsx'
+            }).send(file);
+        }
      })
 
 });
 
 app.post('/process', middleware.requireAuthentication, function(req, res) {  
-    var requestid = req.body.requestId;
+    var requestId = req.body.requestId;
     var requesterNumber = req.body.requesterVatNumber;
     var requesterCountry = req.body.requesterCountryCode;
     var vatNumbers = req.body.vatNumbers;
-    //var sessionId = req.get('sessionId');
     var sessionId = get_cookies(req).sessionId;
     var ioId =  get_cookies(req).io;
     // validations
+    res.cookie('lastRequest',requestId);
     res.status(200).send();
     
     // process list
@@ -91,9 +136,9 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
             
             if (request===null) {
                 db.request.create({
-                            id : sessionId+requestid+vatRequest.itemId,
+                            id : sessionId+requestId+vatRequest.itemId,
                             sessionId : sessionId,
-                            requestId : requestid,
+                            requestId : requestId,
                             itemId : vatRequest.itemId,
                             vatNumber : vatRequest.vatNumber,
                             countryCode : vatRequest.countryCode,
@@ -109,15 +154,18 @@ app.post('/process', middleware.requireAuthentication, function(req, res) {
                             console.log(e);
                         });        
             } else {
-                if (request.status==='3' || request.status==='5' ) {
-                    request.update( {retries : request.retries+1});
+                if (request.status==='3' || request.status==='5' ) { 
+                    request.update( {
+                                     requestId : requestId});
                 } else {
                     request.update( {
                         requesterVatNumber : requesterNumber,
-                        requesterCountryCode :  requesterCountry
+                        requesterCountryCode :  requesterCountry,
+                        requestId : requestId
                     } );
                     callVatService(request,ioId);    
-                    request.update( {retries : request.retries+1});
+                    request.update( {retries : request.retries+1,
+                                     requestId : requestId});
                 }
             }
         });
@@ -147,9 +195,6 @@ app.post('/users/login', function(req, res){
             token: token
         });
     }).then(function (tokenInstance) {
- 
-       // res.sendFile(__dirname + '/public/validation.html');
-       // res.header('Auth',tokenInstance.token).json(userInstance.toPublicJSON());   
       res.cookie('Auth',tokenInstance.token);
       res.cookie('sessionId', guid());
       res.status(200).sendFile(__dirname + '/public/validation.html');       
@@ -161,13 +206,20 @@ app.post('/users/login', function(req, res){
 });
 
 app.get('/logout', middleware.requireAuthentication, function (req,res) {
+    
+    var sessionId = get_cookies(req).sessionId;
+    db.request.destroy({ where: {sessionId : sessionId }})
+    
+    res.cookie("Auth", "", { expires: new Date() });
+    res.cookie("io", "", { expires: new Date() });
+    res.cookie("lastRequest", "", { expires: new Date() });
+    res.cookie("sessionId", "", { expires: new Date() })
+    
     req.token.destroy().then(function() {
-      
-     
       res.status(200).sendFile(__dirname + '/public/login.html');
       //res.redirect('/users/login');
     //res.status(204).se/users/loginnd();    
-}).catch(function () {
+    }).catch(function () {
         res.status(500).send();
     });
     
@@ -178,14 +230,14 @@ db.sequelize.sync({
             http.listen(PORT, function () {
                 
                 //create admin
-              var body = { email : 'admin@vatvision.com',
+             var body = { email : 'admin@vatvision.com',
                              password : 'happyday1'} ;
 
-                db.user.create(body).then(function (user) {
+              db.user.create(body).then(function (user) {
                     console.log('Express listening on port + ' + PORT);
-                } ).catch(function (e){
-                    console.log('Admin user creation failed ' + e);
-                })  
+               } ).catch(function (e){
+                   console.log('Admin user creation failed ' + e);
+              })  
                 
             });    
              
@@ -207,13 +259,13 @@ function callVatService (request,ioId) {
         soap.createClient(vatServiceWSDLUrl, function(err, client) {
     
             client.checkVatApprox(checkVatApprox, function(err, result) {
-            
+           // console.log(JSON.stringify(result));
 
                 if (result.valid) { 
 
                     // address 
                     var address ="";
-                    if (!result.traderAddress==='undefined') {
+                    if (result.traderAddress != 'undefined') {
                         address = result.traderAddress.replace(/\n/g, " ")
                     }
 
@@ -238,7 +290,7 @@ function callVatService (request,ioId) {
                                     });
                          console.log(JSON.stringify(result));
                     };
-                //ioSocket.emit('message',request);
+
                 io.to(ioId).emit('message',request);
         });          
     });
@@ -262,20 +314,6 @@ function ConvertToCSV(objArray) {
 
     return str;
 };
-
-// extracted from Express, used by `res.download()`
-function contentDisposition(filename) {
-  var ret = 'attachment';
-  if (filename) {
-   // filename = basename(filename);
-    // if filename contains non-ascii characters, add a utf-8 version ala RFC 5987
-    ret = /[^\040-\176]/.test(filename)
-      ? 'attachment; filename="' + encodeURI(filename) + '"; filename*=UTF-8\'\'' + encodeURI(filename)
-      : 'attachment; filename="' + filename + '"';
-  }
-  console.log('>>>>>>>>>>>>>>>>>>' + ret);
-  return ret;
-}
 
 function guid() {
   function s4() {

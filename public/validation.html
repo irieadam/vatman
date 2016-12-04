@@ -50,13 +50,15 @@
           <a href="#" class="close fileupload-exists" data-dismiss="fileupload" style="float: none">×</a>
         </div>
       </div>
-         <div class="col-md-11">
+         <div class="col-md-1">
     <button id="clear" class="btn btn-primary float-md-left float-sm-left">Clear</button>
      </div>
+      <div class="col-md-10">
+        <a href="#" class="float-md-right float-sm-right"> total: <span class="badge float-md-right float-sm-right" data-bind="text: vatRequests().length"></span></a><br>
+        <a href="#" class="float-md-right float-sm-right" data-bind="css: { errorText: failureCount() > 0 }"> failed: <span class="badge float-md-right float-sm-right" data-bind="text: failureCount(), css: { errorText: failureCount() > 0 }"></span></a><br>
+     </div>
     </div>
-
       </div>
-
     
 </div>
     <div class="row">
@@ -72,24 +74,26 @@
               <th>Trader Name</th>
               <th>Trader Address</th>
               <th>Confirmation</th>
-              <th>RequestTime</th>
+              <th>RequestDate</th>
               <th>Valid</th>
+              <th>Retries</th>
             </tr>
           </thead> 
           <tbody data-bind="foreach: vatRequests">
-             <tr data-bind="css: { success: status() == 3,danger: status() == 5, warning: status() == 4 ,active: status() == 1}">
-            <td data-bind="text: countryCode"></td>
-            <td data-bind="text: vatNumber"></td>
+             <tr data-bind="css: { success: status() == 3,danger: status() == 4, warning: status() == 5 ,active: status() == 1}">
+            <td contenteditable='true' data-bind="text: countryCode"></td>
+            <td contenteditable='true' data-bind="text: vatNumber"></td>
             <td data-bind="text: traderName"></td>
             <td data-bind="text: traderAddress"></td>
             <td data-bind="text: confirmation"></td>
             <td data-bind="text: requestTime"></td>
             <td data-bind="text: valid"></td>
+            <td data-bind="text: retries"></td>
             
              </tr>
           </tbody>
           <tfoot>
-            <td colspan="7"></td>
+            <td colspan="8"></td>
           </tfoot>
         </table>
       </div>  

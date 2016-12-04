@@ -3,6 +3,13 @@ var batch;
 var fileSelected = false;
 
 var vm = { vatRequests : ko.observableArray([])};
+var failureCount = ko.computed(function() {
+    var items = ko.utils.arrayFilter(vm.vatRequests(), function(item) {
+         return item().status() === "4";
+    });
+
+    return items.length;
+});
 ko.applyBindings(vm);
 
 var socket = io();
@@ -22,7 +29,7 @@ document.getElementById('clear').addEventListener('click', clear, false);
 //document.getElementById('exportResult').addEventListener('click', getFile, false);
 
 socket.on('message', function (message) {
-     //console.log(JSON.stringify(message));
+     console.log(JSON.stringify(message));
      var item = ko.utils.arrayFirst(vm.vatRequests(), function (item) {
         return item().itemId() === message.itemId;
       }) || null;
@@ -34,6 +41,7 @@ socket.on('message', function (message) {
           item().requestTime(message.updatedAt.toString().substring(0,10));
           item().valid(message.valid);
           item().status(message.status);
+          item().retries(message.retries);
       }
 })
 
@@ -71,14 +79,14 @@ function process(evt) {
          
         vm.vatRequests().forEach(function (request) {
             var requestItem = {};
-           if (request().status()=== '3' || request().status()=== '5' ) { 
+       //    if (request().status()=== '3' || request().status()=== '5' ) { 
                 //skip
-            } else {
+      //      } else {
                 requestItem.itemId = request().itemId();
                 requestItem.vatNumber = request().vatNumber();
                 requestItem.countryCode = request().countryCode();
                 batch.vatNumbers.push(requestItem);
-            }
+        //    }
         })
           client.send(JSON.stringify(batch));
         }
@@ -187,8 +195,16 @@ function handleFiles (files) {
         };
 
         // remove spaces
-        countryCode = countryCode.replace(" ","");
-        vatNumber = vatNumber.replace(" ","");
+        if (typeof vatNumber !='undefined' && typeof countryCode !='undefined') {
+           countryCode = countryCode.replace(" ","");
+           vatNumber = vatNumber.replace(" ","");
+        };
+
+        //remove line breaks
+        if (typeof vatNumber !='undefined' && typeof countryCode !='undefined') {
+           countryCode = countryCode.replace(/\r/g, ""),
+           vatNumber = vatNumber.replace(/\r/g, "")
+        };
 
         return {
           itemId : guid(),
@@ -199,13 +215,14 @@ function handleFiles (files) {
           confirmation: '',
           requestTime: '',
           valid: '',
-          status : '1'
+          status : '1',
+          retries : 0
         };
         
       });
      
 
-      //var nonEmptyValues = arrayOfObjects.filter((i)=> i.countryCode.length > 0);
+     // var nonEmptyValues = arrayOfObjects.filter((i)=> i.countryCode.length > 0);
       var observablearize = function (v) {
           for(prop in v ){
               if (v.hasOwnProperty(prop)) {
@@ -228,8 +245,9 @@ function handleFiles (files) {
 
 }
 
-function saveData() {
-  
+function saveItem (evt) {
+    debugger;
+
 }
 
 function getFile(evt) { //NOT called anywhere

@@ -31,9 +31,9 @@ module.exports = function (sequelize, DataTypes) {
     },
     vatNumber: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
         validate: {
-            len: [1, 20]
+            len: [1, 30]
         }
     },
     countryCode: {
@@ -59,9 +59,9 @@ module.exports = function (sequelize, DataTypes) {
     },
     requesterVatNumber: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
         validate: {
-            len: [1, 20]
+            len: [1, 40]
         }
     }, 
 
