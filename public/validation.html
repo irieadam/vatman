@@ -105,13 +105,13 @@
   
   <div id="bottom-buttons" class="row">
   <div class="col-md-6">
-    <button id="validateNumbers" class="btn btn-primary">Validate</button>
+    <button id="validateNumbers" class="btn btn-primary" data-bind="visible: validateIsAllowed">Validate</button>
   </div>
   <div class="col-md-6">
-    <form action="/export" method="post">
-      <input type="submit" class="btn btn-primary float-md-right float-sm-right" value="Export"></input>
-    <!--      <label class="radio float-md-right float-sm-right"><input type="radio" name="xslx">.csv</label>
-    <label id="xcelCheck" class="radio float-md-right float-sm-right"><input type="radio" name="xslx" checked>.xslx</label> -->
+    <form action="/export" method="post" data-bind="visible: exportIsAllowed">
+      <input type="submit" class="btn btn-primary float-md-right float-sm-right" value="Export" data-bind="visible: exportIsAllowed"></input>
+       <label class="radio float-md-right float-sm-right"><input type="radio" name="xslx">.csv</label>
+      <label id="xcelCheck" class="radio float-md-right float-sm-right"><input type="radio" name="xslx" checked>.xslx</label> 
     </form>  
 
   </div>

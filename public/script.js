@@ -4,6 +4,8 @@ var fileSelected = false;
 
 var vm = {  requesterCountryCode : ko.observable(""),
             requesterVatNumber : ko.observable(""),
+            validateIsAllowed : ko.observable(false),
+            exportIsAllowed : ko.observable(false), 
             vatRequests : ko.observableArray([])
             };
 var failureCount = ko.computed(function() {
@@ -45,6 +47,7 @@ socket.on('message', function (message) {
           item().status(message.status);
           item().retries(message.retries);
       }
+        vm.exportIsAllowed(true);
 })
 
 function clear(evt) {
@@ -249,6 +252,7 @@ function handleFiles (files) {
 
       //fillTable();
       fileSelected = true;
+      vm.validateIsAllowed(true);
       
     };
     reader.onerror = function() {
