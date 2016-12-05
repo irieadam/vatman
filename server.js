@@ -45,7 +45,7 @@ app.get('/', function (req, res) {
 app.post('/export', middleware.requireAuthentication, function (req, res) {
     var sessionId = get_cookies(req).sessionId;
     var lastRequest = get_cookies(req).lastRequest;
-    var xlsx = "on";//req.body.xslx; //1 = csv ,2 = excel 
+    var format = req.body.format; //1 = csv ,2 = excel 
     var arrayOfDbResults = [];
     // get data
     db.request.findAll({
@@ -59,57 +59,62 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
                 arrayOfDbResults.push(request);
             }
             );
-
             // send csv or excel
-            if (xlsx === "on") {
-                var headers = ["Country Code",
-                    "Vat Number",
-                    "Trader Name",
-                    "Trader Address",
-                    "Confirmation",
-                    "RequestDate",
-                    "Valid",
-                    "Retries"];
-                var data = [headers];
+            switch (format) {
+                case "1": //xlsx
+                    var headers = ["Country Code",
+                        "Vat Number",
+                        "Trader Name",
+                        "Trader Address",
+                        "Confirmation",
+                        "RequestDate",
+                        "Valid",
+                        "Retries"];
+                    var data = [headers];
 
-                // for each db result row, get values into array and add array to data array
-                arrayOfDbResults.forEach(function (item) {
-                    var dataValues = item.dataValues;
-                    var resultValues = [];
-                    /** for (prop in dataValues) {
-     
-                         if (dataValues.hasOwnProperty(prop)) {
-                             resultValues.push(dataValues[prop]);
-                         }
-                     };  */
-                    resultValues.push(dataValues.countryCode);
-                    resultValues.push(dataValues.vatNumber);
-                    resultValues.push(dataValues.traderName);
-                    resultValues.push(dataValues.traderAddress);
-                    resultValues.push(dataValues.confirmationNumber);
-                    resultValues.push(dataValues.updatedAt);
-                    resultValues.push(dataValues.valid);
-                    resultValues.push(dataValues.retries);
-                    data.push(resultValues);
-                });
+                    // for each db result row, get values into array and add array to data array
+                    arrayOfDbResults.forEach(function (item) {
+                        var dataValues = item.dataValues;
+                        var resultValues = [];
+                        /** for (prop in dataValues) {
+         
+                             if (dataValues.hasOwnProperty(prop)) {
+                                 resultValues.push(dataValues[prop]);
+                             }
+                         };  */
+                        resultValues.push(dataValues.countryCode);
+                        resultValues.push(dataValues.vatNumber);
+                        resultValues.push(dataValues.traderName);
+                        resultValues.push(dataValues.traderAddress);
+                        resultValues.push(dataValues.confirmationNumber);
+                        resultValues.push(dataValues.updatedAt);
+                        resultValues.push(dataValues.valid);
+                        resultValues.push(dataValues.retries);
+                        data.push(resultValues);
+                    });
 
-                var file = excel.build([{ name: "results", data: data }]);
+                    var file = excel.build([{ name: "results", data: data }]);
 
-                res.status(200).set({
-                    'Content-Type': 'application/vnd.ms-excel',
-                    'Content-Transfer-Encoding': 'binary',
-                    'Content-Disposition': "attachment; filename=" + sessionId + '.xlsx'
-                }).send(file);
+                    res.status(200).set({
+                        'Content-Type': 'application/vnd.ms-excel',
+                        'Content-Transfer-Encoding': 'binary',
+                        'Content-Disposition': "attachment; filename=" + sessionId + '.xlsx'
+                    }).send(file);
+                    break;
 
-            } else {
-                jsonObject = JSON.stringify(arrayOfDbResults);
-                file = ConvertToCSV(jsonObject);
+                case "2": //csv
+                    jsonObject = JSON.stringify(arrayOfDbResults);
+                    file = ConvertToCSV(jsonObject);
 
-                res.status(200).set({
-                    'Content-Type': 'text/csv',//'text/plain',//application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-                    'Content-Disposition': "attachment; filename=" + sessionId + '.csv'
-                }).send(file);
+                    res.status(200).set({
+                        'Content-Type': 'text/csv',//'text/plain',//application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+                        'Content-Disposition': "attachment; filename=" + sessionId + '.csv'
+                    }).send(file);
+                    break;
+                default:
+
             }
+
         })
 
 });
@@ -155,7 +160,7 @@ app.post('/process', middleware.requireAuthentication, function (req, res) {
                     console.log(e);
                 });
             } else {
-                if (request.status === '3' || request.status === '5') {
+                if (request.status === '3') {
                     request.update({
                         requestId: requestId
                     });

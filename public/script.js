@@ -48,12 +48,14 @@ socket.on('message', function (message) {
           item().retries(message.retries);
       }
         vm.exportIsAllowed(true);
+        
 })
 
 function clear(evt) {
-   
+    vm.validateIsAllowed(false);
+    vm.exportIsAllowed(false);   
     vm.vatRequests.remove(function (status) {return status != 999});
- 
+
 }
 
 function process(evt) { 
@@ -146,6 +148,7 @@ function dragover(e) {
 }
 
 function drop(e) {
+ 
   e.stopPropagation();
   e.preventDefault();
   var dt = e.dataTransfer;
@@ -164,6 +167,7 @@ function browserSupportFileUpload() {
 } 
 // Method that reads and processes the selected csv file
 function upload(evt) {
+
   if (!browserSupportFileUpload()) {
     alert('The File APIs are not fully supported in this browser!');
   } else {
@@ -172,6 +176,7 @@ function upload(evt) {
 }
 
 function handleFiles (files) {
+
     var data = null;
     var file = files[0];
     var reader = new FileReader();
