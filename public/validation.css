@@ -36,6 +36,9 @@ user-modify: read-write;
   overflow-y: auto
 }
 
+.rabioB {
+  padding-right : 2px !important;
+}
 
 
 

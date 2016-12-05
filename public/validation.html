@@ -39,7 +39,7 @@
       <div class="form-group col-lg-4 col-md-5 col-sm-5">
         <label for="requesterCountry" class="">Requester Country</label>
         <input type="text" class="form-control" id="requesterCountry" placeholder="NL" 
-                data-bind="text: requesterCountryCode(),css : { success:  requesterVatNumber().length > 1, danger: requesterVatNumber().length < 1}" 
+                data-bind="text: requesterCountryCode(),css : { success:  requesterCountryCode().length > 1, danger: requesterCountryCode().length < 1}" 
                 onchange="setRequesterCountryCode()">
       </div>
 
@@ -85,7 +85,7 @@
           </thead> 
           <tbody data-bind="foreach: vatRequests" id="status-table-body">
              <tr data-bind="css: { success: status() == 3,danger: status() == 4, warning: status() == 5 ,active: status() == 1}">
-            <td data-bind="text: countryCode"></td>
+            <td data-bind="text: countryCode" onkeypress="contry(evt)"></td>
             <td data-bind="text: vatNumber"></td>
             <td data-bind="text: traderName"></td>
             <td data-bind="text: traderAddress"></td>
@@ -110,8 +110,10 @@
   <div class="col-md-6">
     <form action="/export" method="post" data-bind="visible: exportIsAllowed">
       <input type="submit" class="btn btn-primary float-md-right float-sm-right" value="Export" data-bind="visible: exportIsAllowed"></input>
-       <label class="radio float-md-right float-sm-right"><input type="radio" name="format" value="2">.csv</label>
-      <label  class="radio float-md-right float-sm-right"><input type="radio" name="format" value="1" checked>.xslx</label> 
+      <div>
+       <label class="radioB float-md-right float-sm-right"><input type="radio" name="format" value="2">.csv</label>
+       <label  class="radioB float-md-right float-sm-right"><input type="radio" name="format" value="1" checked>.xslx</label> 
+      </div>
     </form>  
 
   </div>
