@@ -4,20 +4,20 @@
 
 .success {
 background-color:#dff0d8;
+ border: none;
+
 }
 
 .warning {
   background-color:#fcf8e3;
-  -webkit-user-modify: read-write;
--moz-user-modify: read-write;
-user-modify: read-write;
+   border: none;
+
 }
 
 .danger {
   background-color:#f2dede;
-  -webkit-user-modify: read-write;
--moz-user-modify: read-write;
-user-modify: read-write;
+   border: none;
+
 }
 
 .errorText {
@@ -26,9 +26,8 @@ user-modify: read-write;
 
 .active {
  background-color:#f5f5f5;
-   -webkit-user-modify: read-write;
--moz-user-modify: read-write;
-user-modify: read-write;
+ border: none;
+
 }
 
 #status-table-div {
@@ -40,5 +39,10 @@ user-modify: read-write;
   padding-right : 2px !important;
 }
 
+.editable {
+     -webkit-user-modify: read-write;
+-moz-user-modify: read-write;
+user-modify: read-write;
+}
 
 

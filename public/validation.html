@@ -85,8 +85,10 @@
           </thead> 
           <tbody data-bind="foreach: vatRequests" id="status-table-body">
              <tr data-bind="css: { success: status() == 3,danger: status() == 4, warning: status() == 5 ,active: status() == 1}">
-            <td data-bind="text: countryCode" onkeypress="contry(evt)"></td>
-            <td data-bind="text: vatNumber"></td>
+
+            <td> <input data-bind="value: countryCode,css: { success: status() == 3,danger: status() == 4, warning: status() == 5 ,active: status() == 1}, enable: editable()"> </input></td> 
+            <td> <input data-bind="value: vatNumber,css: { success: status() == 3,danger: status() == 4, warning: status() == 5 ,active: status() == 1}, enable: editable()"> </input></td> 
+         
             <td data-bind="text: traderName"></td>
             <td data-bind="text: traderAddress"></td>
             <td data-bind="text: confirmation"></td>

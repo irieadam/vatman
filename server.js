@@ -168,7 +168,8 @@ app.post('/process', middleware.requireAuthentication, function (req, res) {
                     request.update({
                         requesterVatNumber: requesterNumber,
                         requesterCountryCode: requesterCountry,
-                        requestId: requestId
+                        vatNumber: vatRequest.vatNumber,
+                        countryCode: vatRequest.countryCode
                     });
                     callVatService(request, ioId);
                     request.update({

@@ -32,6 +32,7 @@ document.getElementById('validateNumbers').addEventListener('click', process, fa
 document.getElementById('logout').addEventListener('click', logout, false);
 document.getElementById('clear').addEventListener('click', clear, false);
 
+
 socket.on('message', function (message) {
     // console.log(JSON.stringify(message));
      var item = ko.utils.arrayFirst(vm.vatRequests(), function (item) {
@@ -46,6 +47,9 @@ socket.on('message', function (message) {
           item().valid(message.valid);
           item().status(message.status);
           item().retries(message.retries);
+          if (message.status === "3") {
+              item().editable(false);
+          } 
       }
         vm.exportIsAllowed(true);
         
@@ -215,8 +219,8 @@ function handleFiles (files) {
 
         // remove spaces
         if (typeof vatNumber !='undefined' && typeof countryCode !='undefined') {
-           countryCode = countryCode.replace(" ","");
-           vatNumber = vatNumber.replace(" ","");
+           countryCode = countryCode.replace(/ /g,"");
+           vatNumber = vatNumber.replace(/ /g,"");
         };
 
         //remove line breaks
@@ -235,7 +239,8 @@ function handleFiles (files) {
           requestTime: '',
           valid: '',
           status : '1',
-          retries : 0
+          retries : 0,
+          editable : true
         };
         
       });
