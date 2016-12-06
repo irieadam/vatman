@@ -1,20 +1,27 @@
 var jsonObjWithArrayOfVatCodes = {item : [] } ;
 var batch;
-var fileSelected = false;
 
 var vm = {  requesterCountryCode : ko.observable(""),
             requesterVatNumber : ko.observable(""),
             validateIsAllowed : ko.observable(false),
             exportIsAllowed : ko.observable(false), 
-            vatRequests : ko.observableArray([])
+            vatRequests : ko.observableArray([]),
+            fileSelected : ko.observable(false)
             };
 var failureCount = ko.computed(function() {
     var items = ko.utils.arrayFilter(vm.vatRequests(), function(item) {
          return item().status() === "4";
-    });
-
+    });  
     return items.length;
 });
+
+var notValidCount = ko.computed(function() {
+    var items = ko.utils.arrayFilter(vm.vatRequests(), function(item) {
+         return item().status() === "5";
+    });  
+    return items.length;
+});
+
 ko.applyBindings(vm);
 
 var socket = io();
@@ -31,7 +38,6 @@ document.getElementById('txtFileUpload').addEventListener('change', upload, fals
 document.getElementById('validateNumbers').addEventListener('click', process, false);
 document.getElementById('logout').addEventListener('click', logout, false);
 document.getElementById('clear').addEventListener('click', clear, false);
-
 
 socket.on('message', function (message) {
     // console.log(JSON.stringify(message));
@@ -57,17 +63,18 @@ socket.on('message', function (message) {
 
 function clear(evt) {
     vm.validateIsAllowed(false);
-    vm.exportIsAllowed(false);   
+    vm.exportIsAllowed(false); 
+    vm.fileSelected(false);  
     vm.vatRequests.remove(function (status) {return status != 999});
 
 }
 
 function process(evt) { 
 
-    if (!fileSelected || vm.requesterCountryCode().length===0 || vm.requesterVatNumber().length===0) {
+    if (!vm.fileSelected() || vm.requesterCountryCode().length===0 || vm.requesterVatNumber().length===0) {
             var messages = ["Please provide: "];
 
-            if (!fileSelected ) {
+            if (!vm.fileSelected() ) {
                 messages.push("vat numbers to process ");
             };
             if (vm.requesterCountryCode().length ==0) {
@@ -140,7 +147,6 @@ function getCookie(cname) {
     return "";
 }
 
-// functions for file transfer 
 function dragenter(e) {
   e.stopPropagation();
   e.preventDefault();
@@ -169,7 +175,7 @@ function browserSupportFileUpload() {
   }
   return isCompatible;
 } 
-// Method that reads and processes the selected csv file
+
 function upload(evt) {
 
   if (!browserSupportFileUpload()) {
@@ -259,9 +265,7 @@ function handleFiles (files) {
       } ; 
       var observableVatRequests = nonEmptyValues.map(observablearize);
       vm.vatRequests(observableVatRequests);
-
-      //fillTable();
-      fileSelected = true;
+      vm.fileSelected(true);
       vm.validateIsAllowed(true);
       
     };
@@ -269,40 +273,4 @@ function handleFiles (files) {
       alert('Unable to read ' + file.fileName);
     };
 
-}
-
-function updateItem (evt) {
-    debugger;
-}
-
-function setRequesterVatNumber() {
-        vm.requesterVatNumber(document.getElementById("requesterVat").value);
-}
-
-function setRequesterCountryCode() {
-         vm.requesterCountryCode(document.getElementById("requesterCountry").value);
-}
-
-function getFile(evt) { //NOT called anywhere
-            var client = new XMLHttpRequest();
-            client.open('GET', '/export', true);
-           // client.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-            client.setRequestHeader('Auth', getCookie('Auth'));
-            client.setRequestHeader('sessionId', getCookie('sessionId'));
-
-            client.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
-            client.setRequestHeader('Accept-Encoding', 'gzip, deflate, sdch, br');
-            client.setRequestHeader('Accept-Language', 'en-US,en;q=0.8,nl;q=0.6');
-            client.setRequestHeader('Upgrade-Insecure-Requests', 1);
-
-            client.onreadystatechange = function () { 
-                if (client.readyState == 4 && client.status == 401) {
-                    alert('Unauthorized');
-                }
-            }
-            client.send();
-} 
-
-function contry (evt) {
-    debugger;
 }

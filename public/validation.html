@@ -22,56 +22,56 @@
         <h2>Vat Validation</h2>
       </div>
       <div class=" col-md-6 col-sm-6">
-        
-           <a href="/logout" id="logout" class="btn btn-primary float-md-right float-sm-right">Logout</a>
+
+        <a href="/logout" id="logout" class="btn btn-primary float-md-right float-sm-right">Logout</a>
 
       </div>
-      </div>
+    </div>
 
-  <div id="requestor-input-boxes" class="row">
-    <div class=" col-md-12 col-sm-12">
-      <div class="form-group col-lg-8 col-md-7 col-sm-7">
-        <label for="requesterVat">Requester VAT</label>
-        <input type="text" class="form-control" id="requesterVat" placeholder="124567896B01"  
-                data-bind="text: requesterVatNumber(),css : { success:  requesterVatNumber().length > 1, danger: requesterVatNumber().length < 1}" 
-                onchange="setRequesterVatNumber()">
-      </div>
-      <div class="form-group col-lg-4 col-md-5 col-sm-5">
-        <label for="requesterCountry" class="">Requester Country</label>
-        <input type="text" class="form-control" id="requesterCountry" placeholder="NL" 
-                data-bind="text: requesterCountryCode(),css : { success:  requesterCountryCode().length > 1, danger: requesterCountryCode().length < 1}" 
-                onchange="setRequesterCountryCode()">
-      </div>
+    <div id="requestor-input-boxes" class="row">
+      <div class=" col-md-12 col-sm-12">
+        <div class="form-group col-lg-8 col-md-7 col-sm-7">
+          <label for="requesterVat">Requester VAT</label>
+          <input type="text" class="form-control" id="requesterVat" placeholder="124567896B01" data-bind="value: requesterVatNumber,css : { success:  requesterVatNumber().length > 1, danger: requesterVatNumber().length < 1}"
+            >
+        </div>
+        <div class="form-group col-lg-4 col-md-5 col-sm-5">
+          <label for="requesterCountry" class="">Requester Country</label>
+          <input type="text" class="form-control" id="requesterCountry" placeholder="NL" data-bind="value: requesterCountryCode,css : { success:  requesterCountryCode().length > 1, danger: requesterCountryCode().length < 1}"
+           >
+        </div>
 
-    <div class="row"> 
-      <div class=" col-md-1 col-sm-1 ">
-        <div class="fileupload fileupload-new" data-provides="fileupload">
-          <span class="btn btn-primary btn-file"><span class="fileupload-new">Select file</span>
-          <span class="fileupload-exists">Change</span>
-          <input type="file" type="file" name="File Upload" id="txtFileUpload" accept=".csv, application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
-          </span>
-          <span class="fileupload-preview"></span>
-          <a href="#" class="close fileupload-exists" data-dismiss="fileupload" style="float: none">×</a>
+        <div class="row">
+          <div class=" col-md-1 col-sm-1 ">
+            <div class="fileupload fileupload-new" data-provides="fileupload">
+              <span class="btn btn-primary btn-file"><span class="fileupload-new">Select file</span>
+              <span class="fileupload-exists">Change</span>
+              <input type="file" type="file" name="File Upload" id="txtFileUpload" accept=".csv, application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              />
+              </span>
+              <span class="fileupload-preview"></span>
+              <a href="#" class="close fileupload-exists" data-dismiss="fileupload" style="float: none">×</a>
+            </div>
+          </div>
+          <div class="col-md-1">
+            <button id="clear" class="btn btn-primary float-md-left float-sm-left" data-bind="visible: fileSelected">Clear</button>
+          </div>
+          <div class="col-md-10">
+            <a href="#" class="float-md-right float-sm-right" data-bind="visible: fileSelected"> total : <span class="badge float-md-right float-sm-right" data-bind="text: vatRequests().length,visible: fileSelected"></span></a><br>
+            <a href="#" class="float-md-right float-sm-right" data-bind="css: { errorText: failureCount() > 0 },visible: fileSelected"> failed : <span class="badge float-md-right float-sm-right" data-bind="text: failureCount(), css: { errorText: failureCount() > 0 },visible: fileSelected"></span></a><br>
+            <a href="#" class="float-md-right float-sm-right" data-bind="css: { errorText: notValidCount() > 0 },visible: fileSelected"> not valid : <span class="badge float-md-right float-sm-right" data-bind="text: notValidCount(), css: { errorText: notValidCount() > 0 },visible: fileSelected"></span></a><br>
+          </div>
         </div>
       </div>
-         <div class="col-md-1">
-    <button id="clear" class="btn btn-primary float-md-left float-sm-left">Clear</button>
-     </div>
-      <div class="col-md-10">
-        <a href="#" class="float-md-right float-sm-right"> total: <span class="badge float-md-right float-sm-right" data-bind="text: vatRequests().length"></span></a><br>
-        <a href="#" class="float-md-right float-sm-right" data-bind="css: { errorText: failureCount() > 0 }"> failed: <span class="badge float-md-right float-sm-right" data-bind="text: failureCount(), css: { errorText: failureCount() > 0 }"></span></a><br>
-     </div>
+
     </div>
-      </div>
-    
-</div>
     <div class="row">
     </div>
 
- <div class="row" >
-     <div id="status-table-div" class="col-md-12" >
+    <div class="row" data-bind="visible: fileSelected">
+      <div id="status-table-div" class="col-md-12">
         <table id="status-table" class="table table-bordered">
-       <thead>
+          <thead>
             <tr>
               <th>Country Code</th>
               <th>Vat Number</th>
@@ -82,51 +82,50 @@
               <th>Valid</th>
               <th>Retries</th>
             </tr>
-          </thead> 
+          </thead>
           <tbody data-bind="foreach: vatRequests" id="status-table-body">
-             <tr data-bind="css: { success: status() == 3,danger: status() == 4, warning: status() == 5 ,active: status() == 1}">
+            <tr data-bind="css: { success: status() == 3,danger: status() == 4, warning: status() == 5 ,active: status() == 1}">
 
-            <td> <input data-bind="value: countryCode,css: { success: status() == 3,danger: status() == 4, warning: status() == 5 ,active: status() == 1}, enable: editable()"> </input></td> 
-            <td> <input data-bind="value: vatNumber,css: { success: status() == 3,danger: status() == 4, warning: status() == 5 ,active: status() == 1}, enable: editable()"> </input></td> 
-         
-            <td data-bind="text: traderName"></td>
-            <td data-bind="text: traderAddress"></td>
-            <td data-bind="text: confirmation"></td>
-            <td data-bind="text: requestTime"></td>
-            <td data-bind="text: valid"></td>
-            <td data-bind="text: retries"></td>
-            
-             </tr>
+              <td> <input data-bind="value: countryCode,css: { success: status() == 3,danger: status() == 4, warning: status() == 5 ,active: status() == 1}, enable: editable()">                </input>
+              </td>
+              <td> <input data-bind="value: vatNumber,css: { success: status() == 3,danger: status() == 4, warning: status() == 5 ,active: status() == 1}, enable: editable()">                </input>
+              </td>
+
+              <td data-bind="text: traderName"></td>
+              <td data-bind="text: traderAddress"></td>
+              <td data-bind="text: confirmation"></td>
+              <td data-bind="text: requestTime"></td>
+              <td data-bind="text: valid"></td>
+              <td data-bind="text: retries"></td>
+
+            </tr>
           </tbody>
-          <tfoot>
-            <td colspan="8" id="status-table-footer"></td>
-          </tfoot>
+
         </table>
-      </div>  
-  </div>
-  
-  <div id="bottom-buttons" class="row">
-  <div class="col-md-6">
-    <button id="validateNumbers" class="btn btn-primary" data-bind="visible: validateIsAllowed">Validate</button>
-  </div>
-  <div class="col-md-6">
-    <form action="/export" method="post" data-bind="visible: exportIsAllowed">
-      <input type="submit" class="btn btn-primary float-md-right float-sm-right" value="Export" data-bind="visible: exportIsAllowed"></input>
-      <div>
-       <label class="radioB float-md-right float-sm-right"><input type="radio" name="format" value="2">.csv</label>
-       <label  class="radioB float-md-right float-sm-right"><input type="radio" name="format" value="1" checked>.xslx</label> 
       </div>
-    </form>  
+    </div>
 
-  </div>
-</div>
+    <div id="bottom-buttons" class="row">
+      <div class="col-md-6">
+        <button id="validateNumbers" class="btn btn-primary" data-bind="visible: validateIsAllowed">Validate</button>
+      </div>
+      <div class="col-md-6">
+        <form action="/export" method="post" data-bind="visible: exportIsAllowed">
+          <input type="submit" class="btn btn-primary float-md-right float-sm-right" value="Export" data-bind="visible: exportIsAllowed"></input>
+          <div>
+            <label class="radioB float-md-right float-sm-right"><input type="radio" name="format" value="2">.csv</label>
+            <label class="radioB float-md-right float-sm-right"><input type="radio" name="format" value="1" checked>.xslx</label>
+          </div>
+        </form>
 
-<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-debug.js" type="text/javascript"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.0/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
-<script src="https://knockoutjs.com/examples/resources/knockout.simpleGrid.3.0.js"></script>
-<script src="../script.js"></script>
+      </div>
+    </div>
+
+    <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-debug.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.0/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
+    <script src="../script.js"></script>
 
 </body>
 
