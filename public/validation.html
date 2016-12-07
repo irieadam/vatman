@@ -56,10 +56,15 @@
           <div class="col-md-1">
             <button id="clear" class="btn btn-primary float-md-left float-sm-left" data-bind="visible: fileSelected">Clear</button>
           </div>
-          <div class="col-md-10">
-            <a href="#" class="float-md-right float-sm-right" data-bind="visible: fileSelected"> total : <span class="badge float-md-right float-sm-right" data-bind="text: vatRequests().length,visible: fileSelected"></span></a><br>
+    
+           <div class="col-md-9">
             <a href="#" class="float-md-right float-sm-right" data-bind="css: { errorText: failureCount() > 0 },visible: fileSelected"> failed : <span class="badge float-md-right float-sm-right" data-bind="text: failureCount(), css: { errorText: failureCount() > 0 },visible: fileSelected"></span></a><br>
             <a href="#" class="float-md-right float-sm-right" data-bind="css: { errorText: notValidCount() > 0 },visible: fileSelected"> not valid : <span class="badge float-md-right float-sm-right" data-bind="text: notValidCount(), css: { errorText: notValidCount() > 0 },visible: fileSelected"></span></a><br>
+          </div>
+
+              <div class="col-md-1">
+            <a href="#" class="float-md-right float-sm-right" data-bind="visible: fileSelected"> total : <span class="badge float-md-right float-sm-right" data-bind="text: vatRequests().length,visible: fileSelected"></span></a><br>
+             <a href="#" class="float-md-right float-sm-right" data-bind="visible: fileSelected,css: { validText: validCount() > 0 }"> valid : <span class="badge float-md-right float-sm-right" data-bind="text: validCount(),visible: fileSelected,css: { validText: validCount() > 0 }"></span></a><br>
           </div>
         </div>
       </div>

@@ -24,6 +24,9 @@ background-color:#dff0d8;
   color: red;
 }
 
+.validText {
+  color: green;
+}
 
 .active {
  background-color:#f5f5f5;

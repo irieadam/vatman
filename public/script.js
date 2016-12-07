@@ -22,6 +22,12 @@ var notValidCount = ko.computed(function() {
     return items.length;
 });
 
+var validCount = ko.computed(function() {
+    var items = ko.utils.arrayFilter(vm.vatRequests(), function(item) {
+         return item().status() === "3";
+    });  
+    return items.length;
+});
 ko.applyBindings(vm);
 
 var socket = io();
