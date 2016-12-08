@@ -33,13 +33,11 @@
      
         <div class="form-group col-lg-1 col-md-2 col-sm-2">
           <label for="requesterCountry" class="">Country</label>
-          <input type="text" class="form-control" id="requesterCountry" placeholder="NL" data-bind="value: requesterCountryCode,css : { success:  requesterCountryCode().length > 1, danger: requesterCountryCode().length < 1}"
-           >
+          <input type="text" class="form-control" id="requesterCountry" placeholder="NL" data-bind="value: requesterCountryCode,css : { success:  requesterCountryCode().length > 1, danger: requesterCountryCode().length < 1}">
         </div>
        <div class="form-group col-lg-11 col-md-10 col-sm-10">
           <label for="requesterVat">VAT number requestor</label>
-          <input type="text" class="form-control" id="requesterVat" placeholder="124567896B01" data-bind="value: requesterVatNumber,css : { success:  requesterVatNumber().length > 1, danger: requesterVatNumber().length < 1}"
-            >
+          <input type="text" class="form-control" id="requesterVat" placeholder="124567896B01" data-bind="value: requesterVatNumber,css : { success:  requesterVatNumber().length > 1, danger: requesterVatNumber().length < 1}">
         </div>
 
         <div class="row">
@@ -47,8 +45,7 @@
             <div class="fileupload fileupload-new" data-provides="fileupload">
               <span class="btn btn-primary btn-file"><span class="fileupload-new">Select file</span>
               <span class="fileupload-exists">Change</span>
-              <input type="file" type="file" name="File Upload" id="txtFileUpload" accept=".csv, application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-              />
+              <input type="file" type="file" name="File Upload" id="txtFileUpload" accept=".csv, application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
               </span>
               <span class="fileupload-preview"></span>
               <a href="#" class="close fileupload-exists" data-dismiss="fileupload" style="float: none">×</a>

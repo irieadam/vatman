@@ -12,19 +12,6 @@ nav {
   margin-bottom: 15px;
 }
 
-#requestor-input-boxes {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-#requesterCountry {
-  width: 70px;
-}
-
-#status-table-bootstrap-cell {
-  overflow-x: auto;
-}
 
 .form-group {
   padding-left: 0;
@@ -32,3 +19,16 @@ nav {
  
 }
 
+#inputEmail3 {
+  width: 12em;
+}
+
+#inputPassword3 {
+  width: 12em;
+}
+
+.center {
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+}
