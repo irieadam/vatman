@@ -196,21 +196,28 @@ function handleFiles (files) {
     var data = null;
     var file = files[0];
     var reader = new FileReader();
-    var fileType = file.type;
+    var fileType = "";
+    var fileName = file.name;
     var csvData; 
 
-    if (fileType === "text/csv") {          
+    if (fileType === "text/csv" || fileName.substring(fileName.length, fileName.length- 3) === 'csv') {
+        fileType = 'csv';
+    } else { // if (fileType === "application/vnd.ms-excel" || fileType ===  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        fileType = 'xlsx';
+    }
+
+    if (fileType === 'csv') {          
         reader.readAsText(file);
-    } else if (fileType === "application/vnd.ms-excel" || fileType ===  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+    } else if (fileType === 'xlsx') {
         reader.readAsBinaryString(file);
     }
 
     reader.onload = function(event) {
 
-      if (fileType === "text/csv") {
+      if (fileType === 'csv') {
          csvData = event.target.result;
 
-      } else if (fileType === "application/vnd.ms-excel" || fileType ===  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")  {
+      } else if (fileType === "xlsx")  {
          var data = event.target.result;
          var cfb = XLSX.read(data, {type: 'binary'});
          var sheetName = cfb.SheetNames[0];
