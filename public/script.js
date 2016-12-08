@@ -45,6 +45,7 @@ document.getElementById('validateNumbers').addEventListener('click', process, fa
 document.getElementById('logout').addEventListener('click', logout, false);
 document.getElementById('clear').addEventListener('click', clear, false);
 
+
 socket.on('message', function (message) {
     // console.log(JSON.stringify(message));
      var item = ko.utils.arrayFirst(vm.vatRequests(), function (item) {
@@ -71,6 +72,7 @@ function clear(evt) {
     vm.validateIsAllowed(false);
     vm.exportIsAllowed(false); 
     vm.fileSelected(false);  
+    document.getElementById("fileForm").reset();
     vm.vatRequests.remove(function (status) {return status != 999});
 
 }

@@ -42,14 +42,18 @@
 
         <div class="row">
           <div class=" col-md-1 col-sm-1 ">
+            <form id="fileForm" method="post" action="">
             <div class="fileupload fileupload-new" data-provides="fileupload">
               <span class="btn btn-primary btn-file"><span class="fileupload-new">Select file</span>
               <span class="fileupload-exists">Change</span>
-              <input type="file" type="file" name="File Upload" id="txtFileUpload" accept=".csv, application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
+ 
+             <input type="file" name="File Upload" id="txtFileUpload" accept=".csv, application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
+        
               </span>
               <span class="fileupload-preview"></span>
               <a href="#" class="close fileupload-exists" data-dismiss="fileupload" style="float: none">×</a>
             </div>
+                </form> 
           </div>
           <div class="col-md-1">
             <button id="clear" class="btn btn-primary float-md-left float-sm-left" data-bind="visible: fileSelected">Clear</button>
@@ -73,7 +77,7 @@
       
     </div>
 
-    <div class="row" data-bind="visible: fileSelected">
+    <div class="row">
       <div id="status-table-div" class="col-md-12">
         <table id="status-table" class="table table-bordered">
           <thead>
