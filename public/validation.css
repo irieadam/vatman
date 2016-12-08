@@ -39,8 +39,23 @@ background-color:#dff0d8;
   overflow-y: auto
 }
 
-.rabioB {
-  padding-right : 2px !important;
+#requesterCountry {
+  width: 5em;
+}
+
+#requesterVat {
+  width: 12em;
+}
+
+#requestor-input-boxes {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+
+#status-table-bootstrap-cell {
+  overflow-x: auto;
 }
 
 .editable {
