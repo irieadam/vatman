@@ -50,13 +50,13 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
     var arrayOfDbResults = [];
 
     //get data
-    db.request.findAll({
+ /**    db.request.findAll({
         limit : 1,
         attributes: ['requesterVatNumber', 'requesterCountryCode'],
         where: { requestId: lastRequest }
     }).then(function (request) {
             requesterId = request.requesterCountryCode+request.requesterVatNumber+"_"+request.updatedAt.substring(0,10);
-    })
+    }) */  
     
     db.request.findAll({
         attributes: { exclude: ['id', 'sessionId', 'requestId', 'itemId', 'createdAt', 'requesterVatNumber', 'requesterCountryCode', 'status', 'requestDate', 'userId'] },
