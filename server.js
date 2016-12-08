@@ -64,8 +64,8 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
                 case "1": //xlsx
                     var headers = ["Country Code",
                         "Vat Number",
-                        "Trader Name",
-                        "Trader Address",
+                        "Name",
+                        "Address",
                         "Confirmation",
                         "RequestDate",
                         "Valid",
@@ -182,7 +182,7 @@ app.post('/process', middleware.requireAuthentication, function (req, res) {
     });
 });
 
-app.post('/users', function (req, res) {
+app.post('/users', middleware.requireAuthentication, function (req, res) {
     var body = _.pick(req.body, 'email', 'password');
 
     db.user.create(body).then(function (user) {
