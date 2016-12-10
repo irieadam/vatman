@@ -46,7 +46,7 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
     var sessionId = get_cookies(req).sessionId;
     var lastRequest = get_cookies(req).lastRequest;
     var format = req.body.format; //1 = csv ,2 = excel 
-    var requesterId = '';
+    var fileName = '';
     var arrayOfDbResults = [];
 
     //get data
@@ -59,7 +59,7 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
     }) */  
     
     db.request.findAll({
-        attributes: { exclude: ['id', 'sessionId', 'requestId', 'itemId', 'createdAt', 'requesterVatNumber', 'requesterCountryCode', 'status', 'requestDate', 'userId'] },
+        attributes: { exclude: ['id', 'sessionId', 'requestId', 'itemId', 'createdAt', 'status', 'requestDate', 'userId'] },
         where: { requestId: lastRequest }
     })
         .then(function (requests) {
@@ -69,6 +69,13 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
                 arrayOfDbResults.push(request);
             }
             );
+
+            fileName = arrayOfDbResults[0].requesterCountryCode+arrayOfDbResults[0].requesterVatNumber+"_"+arrayOfDbResults[0].updatedAt.toISOString().slice(0, 10);;
+           
+           for (result in arrayOfDbResults) {
+              delete result.requesterCountryCode;
+              delete result.requesterVatNumber;
+           }
             // send csv or excel
             switch (format) {
                 case "1": //xlsx
@@ -86,12 +93,6 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
                     arrayOfDbResults.forEach(function (item) {
                         var dataValues = item.dataValues;
                         var resultValues = [];
-                        /** for (prop in dataValues) {
-         
-                             if (dataValues.hasOwnProperty(prop)) {
-                                 resultValues.push(dataValues[prop]);
-                             }
-                         };  */
                         resultValues.push(dataValues.countryCode);
                         resultValues.push(dataValues.vatNumber);
                         resultValues.push(dataValues.traderName);
@@ -108,7 +109,7 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
                     res.status(200).set({
                         'Content-Type': 'application/vnd.ms-excel',
                         'Content-Transfer-Encoding': 'binary',
-                        'Content-Disposition': "attachment; filename=" + sessionId + '.xlsx'
+                        'Content-Disposition': "attachment; filename=" + fileName + '.xlsx'
                     }).send(file);
                     break;
 
@@ -118,7 +119,7 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
 
                     res.status(200).set({
                         'Content-Type': 'text/csv',//'text/plain',//application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-                        'Content-Disposition': "attachment; filename=" + sessionId + '.csv'
+                        'Content-Disposition': "attachment; filename=" + fileName + '.csv'
                     }).send(file);
                     break;
                 default:
