@@ -229,39 +229,45 @@ function handleFiles (files) {
       // format input
       var csvTextArray = csvData.split('\n');
       var arrayOfObjects = csvTextArray.map(function(e,i) {
-      var countryCode = e.split(';')[0];
-      var vatNumber = e.split(';')[1];
+
+            var countryCode = e.split(';')[0];
+            var vatNumber = e.split(';')[1];
        
-       // deal with commas
-        if (typeof vatNumber =='undefined' || typeof countryCode =='undefined') {
-            countryCode = e.split(',')[0];
-            vatNumber =  e.split(',')[1];
-        };
+            // deal with commas
+            if (typeof vatNumber =='undefined' || typeof countryCode =='undefined') {
+                countryCode = e.split(',')[0];
+                vatNumber =  e.split(',')[1];
+            };
+    
+            if (typeof vatNumber =='undefined' && typeof countryCode !='undefined' && countryCode.length>0) {
+                vatNumber =  countryCode.substring(2,countryCode.length);
+                countryCode = countryCode.substring(0,2);
+            };
 
-        // remove spaces
-        if (typeof vatNumber !='undefined' && typeof countryCode !='undefined') {
-           countryCode = countryCode.replace(/ /g,"");
-           vatNumber = vatNumber.replace(/ /g,"");
-        };
+            // remove spaces
+            if (typeof vatNumber !='undefined' && typeof countryCode !='undefined') {
+            countryCode = countryCode.replace(/ /g,"");
+            vatNumber = vatNumber.replace(/ /g,"");
+            };
 
-        //remove line breaks
-        if (typeof vatNumber !='undefined' && typeof countryCode !='undefined') {
-           countryCode = countryCode.replace(/\r/g, ""),
-           vatNumber = vatNumber.replace(/\r/g, "")
-        };
+            //remove line breaks
+            if (typeof vatNumber !='undefined' && typeof countryCode !='undefined') {
+            countryCode = countryCode.replace(/\r/g, ""),
+            vatNumber = vatNumber.replace(/\r/g, "")
+            };
 
-        return {
-          itemId : guid(),
-          countryCode: countryCode,
-          vatNumber: vatNumber,
-          traderName: '',
-          traderAddress: '',
-          confirmation: '',
-          requestTime: '',
-          valid: '',
-          status : '1',
-          retries : 0,
-          editable : true
+            return {
+            itemId : guid(),
+            countryCode: countryCode,
+            vatNumber: vatNumber,
+            traderName: '',
+            traderAddress: '',
+            confirmation: '',
+            requestTime: '',
+            valid: '',
+            status : '1',
+            retries : 0,
+            editable : true
         };
         
       });
