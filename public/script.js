@@ -238,7 +238,8 @@ function handleFiles (files) {
                 countryCode = e.split(',')[0];
                 vatNumber =  e.split(',')[1];
             };
-    
+            
+            //split if provided in same field
             if (typeof vatNumber =='undefined' && typeof countryCode !='undefined' && countryCode.length>0) {
                 vatNumber =  countryCode.substring(2,countryCode.length);
                 countryCode = countryCode.substring(0,2);
@@ -246,34 +247,35 @@ function handleFiles (files) {
 
             // remove spaces
             if (typeof vatNumber !='undefined' && typeof countryCode !='undefined') {
-            countryCode = countryCode.replace(/ /g,"");
-            vatNumber = vatNumber.replace(/ /g,"");
+                countryCode = countryCode.replace(/ /g,"");
+                vatNumber = vatNumber.replace(/ /g,"");
             };
 
             //remove line breaks
             if (typeof vatNumber !='undefined' && typeof countryCode !='undefined') {
-            countryCode = countryCode.replace(/\r/g, ""),
-            vatNumber = vatNumber.replace(/\r/g, "")
+                countryCode = countryCode.replace(/\r/g, ""),
+                vatNumber = vatNumber.replace(/\r/g, "")
             };
+            
 
             return {
-            itemId : guid(),
-            countryCode: countryCode,
-            vatNumber: vatNumber,
-            traderName: '',
-            traderAddress: '',
-            confirmation: '',
-            requestTime: '',
-            valid: '',
-            status : '1',
-            retries : 0,
-            editable : true
-        };
+                    itemId : guid(),
+                    countryCode: countryCode,
+                    vatNumber: vatNumber,
+                    traderName: '',
+                    traderAddress: '',
+                    confirmation: '',
+                    requestTime: '',
+                    valid: '',
+                    status : '1',
+                    retries : 0,
+                    editable : true
+                    };
         
-      });
+            });
      
 
-     var nonEmptyValues = arrayOfObjects.filter((i)=> i.countryCode.length > 0);
+     var nonEmptyValues = arrayOfObjects.filter(function (i) { return i.countryCode.length > 0});
      
       var observablearize = function (v) {
           for(prop in v ){

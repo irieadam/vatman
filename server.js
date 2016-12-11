@@ -109,7 +109,7 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
                     res.status(200).set({
                         'Content-Type': 'application/vnd.ms-excel',
                         'Content-Transfer-Encoding': 'binary',
-                        'Content-Disposition': "attachment; filename=" + fileName + '.xlsx'
+                        'Content-Disposition': "attachment; filename=" + "VATValidation_"+fileName + '.xlsx'
                     }).send(file);
                     break;
 
