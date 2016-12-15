@@ -80,7 +80,7 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
             switch (format) {
                 case "1": //xlsx
                     var headers = ["Country Code",
-                        "Vat Number",
+                        "VAT Number",
                         "Name",
                         "Address",
                         "Confirmation",
