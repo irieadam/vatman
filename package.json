@@ -16,6 +16,7 @@
   "author": "Adam C Smith",
   "license": "ISC",
   "dependencies": {
+    "async": "^2.1.4",
     "bcrypt": "^0.8.6",
     "body-parser": "^1.15.0",
     "cookie-parser": "^1.4.3",

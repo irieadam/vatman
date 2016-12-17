@@ -11,6 +11,8 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var async = require('async');
+
 
 var PORT = process.env.PORT || 3000
 var requests = [];
@@ -18,10 +20,12 @@ var ioSocket;
 
 // middleware
 app.use(cookieParser());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '3mb' }));
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
+
 }));
+
 app.use('/', express.static(path.join(__dirname, 'public')));
 
 //sockets 
@@ -43,21 +47,21 @@ app.get('/', function (req, res) {
 });
 
 app.post('/export', middleware.requireAuthentication, function (req, res) {
-    var sessionId = get_cookies(req).sessionId;
-    var lastRequest = get_cookies(req).lastRequest;
+    var sessionId = getCookies(req).sessionId;
+    var lastRequest = getCookies(req).lastRequest;
     var format = req.body.format; //1 = csv ,2 = excel 
     var fileName = '';
     var arrayOfDbResults = [];
 
     //get data
- /**    db.request.findAll({
-        limit : 1,
-        attributes: ['requesterVatNumber', 'requesterCountryCode'],
-        where: { requestId: lastRequest }
-    }).then(function (request) {
-            requesterId = request.requesterCountryCode+request.requesterVatNumber+"_"+request.updatedAt.substring(0,10);
-    }) */  
-    
+    /**    db.request.findAll({
+           limit : 1,
+           attributes: ['requesterVatNumber', 'requesterCountryCode'],
+           where: { requestId: lastRequest }
+       }).then(function (request) {
+               requesterId = request.requesterCountryCode+request.requesterVatNumber+"_"+request.updatedAt.substring(0,10);
+       }) */
+
     db.request.findAll({
         attributes: { exclude: ['id', 'sessionId', 'requestId', 'itemId', 'createdAt', 'status', 'requestDate', 'userId'] },
         where: { requestId: lastRequest }
@@ -70,12 +74,12 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
             }
             );
 
-            fileName = arrayOfDbResults[0].requesterCountryCode+arrayOfDbResults[0].requesterVatNumber+"_"+arrayOfDbResults[0].updatedAt.toISOString().slice(0, 10);;
-           
-           for (result in arrayOfDbResults) {
-              delete result.requesterCountryCode;
-              delete result.requesterVatNumber;
-           }
+            fileName = arrayOfDbResults[0].requesterCountryCode + arrayOfDbResults[0].requesterVatNumber + "_" + arrayOfDbResults[0].updatedAt.toISOString().slice(0, 10);;
+
+            for (result in arrayOfDbResults) {
+                delete result.requesterCountryCode;
+                delete result.requesterVatNumber;
+            }
             // send csv or excel
             switch (format) {
                 case "1": //xlsx
@@ -109,7 +113,7 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
                     res.status(200).set({
                         'Content-Type': 'application/vnd.ms-excel',
                         'Content-Transfer-Encoding': 'binary',
-                        'Content-Disposition': "attachment; filename=" + "VATValidation_"+fileName + '.xlsx'
+                        'Content-Disposition': "attachment; filename=" + "VATValidation_" + fileName + '.xlsx'
                     }).send(file);
                     break;
 
@@ -135,63 +139,87 @@ app.post('/process', middleware.requireAuthentication, function (req, res) {
     var requesterNumber = req.body.requesterVatNumber;
     var requesterCountry = req.body.requesterCountryCode;
     var vatNumbers = req.body.vatNumbers;
-    var sessionId = get_cookies(req).sessionId;
-    var ioId = get_cookies(req).io;
-    // validations
+    var sessionId = getCookies(req).sessionId;
+    var ioId = getCookies(req).io;
+
     res.cookie('lastRequest', requestId);
     res.status(200).send();
 
-    // process list
-    vatNumbers.forEach(function (vatRequest) {
+    getSoapClient().then(function(client){
 
-        //check for existing item. 
-        db.request.findOne({
-            where: {
-                itemId: vatRequest.itemId
-            }
-        }).then(function (request) {
+            async.eachLimit(vatNumbers, 28, function (vatRequest, callback) {
 
-            if (request === null) {
-                db.request.create({
-                    id: sessionId + requestId + vatRequest.itemId,
-                    sessionId: sessionId,
-                    requestId: requestId,
-                    itemId: vatRequest.itemId,
-                    vatNumber: vatRequest.vatNumber,
-                    countryCode: vatRequest.countryCode,
-                    requesterVatNumber: requesterNumber,
-                    requesterCountryCode: requesterCountry,
-                    status: '0',
-                    retries: 0
-                }).then(function (request) {
+                db.request.findOne({
+                    where: {
+                    itemId: vatRequest.itemId
+                    }
+                     }).then(function (request) {
 
-                    callVatService(request, ioId);
+                    if (request === null) {
+                        db.request.create({
+                            id: sessionId + requestId + vatRequest.itemId,
+                            sessionId: sessionId,
+                            requestId: requestId,
+                            itemId: vatRequest.itemId,
+                            vatNumber: vatRequest.vatNumber,
+                            countryCode: vatRequest.countryCode,
+                            requesterVatNumber: requesterNumber,
+                            requesterCountryCode: requesterCountry,
+                            status: '0',
+                            retries: 0
+                        }).then(function (request) {
+        
+                            callVatService(client,request, ioId).then(
+                                function () {
+                                    callback();
+                                },function (err) {
+                                    callback(err);
+                                } );
 
-                }).catch(function (e) {
-                    console.log(e);
-                });
-            } else {
-                if (request.status === '3') {
-                    request.update({
-                        requestId: requestId
-                    });
-                } else {
-                    request.update({
-                        requesterVatNumber: requesterNumber,
-                        requesterCountryCode: requesterCountry,
-                        vatNumber: vatRequest.vatNumber,
-                        countryCode: vatRequest.countryCode
-                    });
-                    callVatService(request, ioId);
-                    request.update({
-                        retries: request.retries + 1,
-                        requestId: requestId
-                    });
+                        }).catch(function (e) {
+                            console.log(e);
+                        });
+                    } else {
+                        if (request.status === '3') {
+                            request.update({
+                                requestId: requestId
+                            });
+                    } else {
+                        request.update({
+                            requesterVatNumber: requesterNumber,
+                            requesterCountryCode: requesterCountry,
+                            vatNumber: vatRequest.vatNumber,
+                            countryCode: vatRequest.countryCode
+                        });
+                        callVatService(client,request, ioId).then(
+                            function () {
+                                console.log("Call back from vat service is in , updayeomg DB")
+                                request.update({
+                                    retries: request.retries + 1,
+                                    requestId: requestId
+                                });
+                                callback();
+                                },function (err) {
+                                    callback(err);
+                                } );
+                    }
                 }
+            
+            });
+
+
+        }, function (err) {
+            if (err) {
+                console.log('A file failed to process');
+            } else {
+                console.log('All files have been processed successfully');
             }
-        });
+        }); //async
+    },function(err){
+        console.log("could not get soap client!!");
     });
 });
+
 
 app.post('/users', middleware.requireAuthentication, function (req, res) {
     var body = _.pick(req.body, 'email', 'password');
@@ -228,7 +256,7 @@ app.post('/users/login', function (req, res) {
 
 app.get('/logout', middleware.requireAuthentication, function (req, res) {
 
-    var sessionId = get_cookies(req).sessionId;
+    var sessionId = getCookies(req).sessionId;
     db.request.destroy({ where: { sessionId: sessionId } })
 
     res.cookie("Auth", "", { expires: new Date() });
@@ -248,7 +276,7 @@ app.get('/logout', middleware.requireAuthentication, function (req, res) {
 
 db.sequelize.sync({
     force: true
-}).then(function () {
+ }).then(function () {
     http.listen(PORT, function () {
 
         //create admin
@@ -266,59 +294,6 @@ db.sequelize.sync({
     });
 
 });
-
-function callVatService(request, ioId) {
-    var vatServiceWSDLUrl = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';
-    var checkVatApprox = {
-        countryCode: request.countryCode,
-        vatNumber: request.vatNumber.replace(/\r/g, ""),
-        requesterCountryCode: request.requesterCountryCode,
-        requesterVatNumber: request.requesterVatNumber.replace(/\r/g, "")
-    };
-
-    request.status = '1';
-
-    //  console.log(">>>>>>>>>>>> REQUEST " + JSON.stringify(checkVatApprox)+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-
-    soap.createClient(vatServiceWSDLUrl, function (err, client) {
-
-        client.checkVatApprox(checkVatApprox, function (err, result) {
-            // console.log(JSON.stringify(result));
-
-            if (result.valid) {
-
-                // address 
-                var address = "";
-                if (typeof result.traderAddress != 'undefined') {
-                    address = result.traderAddress.replace(/\n/g, " ")
-                }
-
-                request.update({
-                    status: '3',
-                    traderName: result.traderName,
-                    traderAddress: address,
-                    confirmationNumber: result.requestIdentifier,
-                    valid: "Valid",
-                    requestDate: result.requestDate.toString()
-                });
-            } else if (!err && !result.valid) {
-                request.update({
-                    status: '5',
-                    confirmationNumber: result.requestIdentifier,
-                    valid: "Not Valid",
-                });
-            } else {
-                request.update({
-                    status: '4',
-                    valid: "Failed",
-                });
-                console.log(JSON.stringify(result));
-            };
-
-            io.to(ioId).emit('message', request);
-        });
-    });
-}
 
 // JSON to CSV Converter
 function ConvertToCSV(objArray) {
@@ -349,7 +324,7 @@ function guid() {
         s4() + '-' + s4() + s4() + s4();
 }
 
-var get_cookies = function (request) {
+function getCookies (request) {
     var cookies = {};
     request.headers && request.headers.cookie.split(';').forEach(function (cookie) {
         var parts = cookie.match(/(.*?)=(.*)$/)
@@ -357,3 +332,77 @@ var get_cookies = function (request) {
     });
     return cookies;
 };
+
+function callVatService(client, request, ioId) {
+    return new Promise(function(resolve, reject){
+        var checkVatApprox = {
+            countryCode: request.countryCode,
+            vatNumber: request.vatNumber.replace(/\r/g, ""),
+            requesterCountryCode: request.requesterCountryCode,
+            requesterVatNumber: request.requesterVatNumber.replace(/\r/g, "")
+        };
+
+        request.status = '1';
+
+        //  console.log(">>>>>>>>>>>> REQUEST " + JSON.stringify(checkVatApprox)+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+
+        client.checkVatApprox(checkVatApprox, function (err, result) {
+            // console.log(JSON.stringify(result));
+            if (typeof result != 'undefined' && result.valid) {
+
+                // address 
+                var address = "";
+                if (typeof result.traderAddress != 'undefined') {
+                    address = result.traderAddress.replace(/\n/g, " ")
+                }
+
+                request.update({
+                    status: '3',
+                    traderName: result.traderName,
+                    traderAddress: address,
+                    confirmationNumber: result.requestIdentifier,
+                    valid: "Valid",
+                    requestDate: result.requestDate.toString()
+                });
+
+            } else if (!err && !result.valid) {
+                request.update({
+                    status: '5',
+                    confirmationNumber: result.requestIdentifier,
+                    valid: "Not Valid",
+                });
+            } else {
+                request.update({
+                    status: '4',
+                    valid: "Failed",
+                });
+                console.log(JSON.stringify(result));
+            };
+
+            io.to(ioId).emit('message', request);
+            resolve();
+        });
+    });
+}
+
+function getSoapClient (){
+
+    return new Promise(function(resolve, reject) {
+         
+         console.log("getting soap client");
+         var vatServiceWSDLUrl = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';
+         soap.createClient(vatServiceWSDLUrl, function (err, client) {
+               console.log('create client call back in'); 
+             if (typeof client === 'undefined') {
+                console.log(err);
+                reject(err);
+              
+             } else {
+                 console.log("got client");
+                 resolve(client);
+             }
+        });
+
+    } );
+
+}; 
