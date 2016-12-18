@@ -119,7 +119,7 @@ app.post('/export', middleware.requireAuthentication, function (req, res) {
 
                 case "2": //csv
                     jsonObject = JSON.stringify(arrayOfDbResults);
-                    file = ConvertToCSV(jsonObject);
+                    file = convertToCSV(jsonObject);
 
                     res.status(200).set({
                         'Content-Type': 'text/csv',//'text/plain',//application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
@@ -147,16 +147,16 @@ app.post('/process', middleware.requireAuthentication, function (req, res) {
 
     getSoapClient().then(function(client){
 
-            async.eachLimit(vatNumbers, 28, function (vatRequest, callback) {
+            async.eachLimit(vatNumbers, 28, function (vatRequest, cb) {
 
                 db.request.findOne({
                     where: {
                     itemId: vatRequest.itemId
                     }
                      }).then(function (request) {
-
-                    if (request === null) {
-                        db.request.create({
+            
+                        if (request === null) {
+                          db.request.create({
                             id: sessionId + requestId + vatRequest.itemId,
                             sessionId: sessionId,
                             requestId: requestId,
@@ -167,50 +167,51 @@ app.post('/process', middleware.requireAuthentication, function (req, res) {
                             requesterCountryCode: requesterCountry,
                             status: '0',
                             retries: 0
-                        }).then(function (request) {
-        
+                         }).then(function (request) {
                             callVatService(client,request, ioId).then(
                                 function () {
-                                    callback();
+                                    cb();
                                 },function (err) {
-                                    callback(err);
+                                    cb(err);
                                 } );
-
                         }).catch(function (e) {
                             console.log(e);
                         });
                     } else {
                         if (request.status === '3') {
                             request.update({
-                                requestId: requestId
+                                requestId: requestId,
+                            }).then(function () {
+                                cb();
                             });
-                    } else {
-                        request.update({
-                            requesterVatNumber: requesterNumber,
-                            requesterCountryCode: requesterCountry,
-                            vatNumber: vatRequest.vatNumber,
-                            countryCode: vatRequest.countryCode
+                        } else {
+                            console.log('status '+ request.status +' updating and calling .')
+                            request.update({
+                                
+                                requestId: requestId,
+                                requesterVatNumber: requesterNumber,
+                                requesterCountryCode: requesterCountry,
+                                vatNumber: vatRequest.vatNumber,
+                                countryCode: vatRequest.countryCode,
+                                retries: request.retries + 1
+                                }).then(function (request) {
+                                        callVatService(client,request, ioId).then(
+                                            function (request) {  
+                                                cb();          
+                                            },function (err) {
+                                                cb(err);
+                                            });
+
+                        }).catch(function (e) {
+                            console.log(e);
                         });
-                        callVatService(client,request, ioId).then(
-                            function () {
-                                console.log("Call back from vat service is in , updayeomg DB")
-                                request.update({
-                                    retries: request.retries + 1,
-                                    requestId: requestId
-                                });
-                                callback();
-                                },function (err) {
-                                    callback(err);
-                                } );
                     }
                 }
             
             });
-
-
         }, function (err) {
             if (err) {
-                console.log('A file failed to process');
+                console.log('A file failed to process: ' +  err);
             } else {
                 console.log('All files have been processed successfully');
             }
@@ -295,8 +296,7 @@ db.sequelize.sync({
 
 });
 
-// JSON to CSV Converter
-function ConvertToCSV(objArray) {
+function convertToCSV(objArray) {
     var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
     var str = '';
 
@@ -344,7 +344,7 @@ function callVatService(client, request, ioId) {
 
         request.status = '1';
 
-        //  console.log(">>>>>>>>>>>> REQUEST " + JSON.stringify(checkVatApprox)+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+      //  console.log(">>>>>>>>>>>> REQUEST " + JSON.stringify(checkVatApprox)+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
         client.checkVatApprox(checkVatApprox, function (err, result) {
             // console.log(JSON.stringify(result));
@@ -378,9 +378,8 @@ function callVatService(client, request, ioId) {
                 });
                 console.log(JSON.stringify(result));
             };
-
             io.to(ioId).emit('message', request);
-            resolve();
+            resolve(request);
         });
     });
 }
